@@ -1,0 +1,131 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "StrongComponent.h.htm">StrongComponent.h - </a><br><br><br>#pragma once<br>
+/////////////////////////////////////////////////////////////////////<br>
+//  Strong Component.h -  Class analysing Strong Components        //<br>
+//  ver 1.0                                                        //<br>
+//                                                                 //<br>
+//  Language:      Visual C++ 2008, SP1                            //<br>
+//  Platform:      Dell Inspiron, Windows 8.1			           //<br>
+//  Application:   CodeAnalyzerEx - CIS 687 Project 3             //<br>
+//  Author:        Nishanth Chandrasekaran SUID:215242434		   //<br>
+/////////////////////////////////////////////////////////////////////<br>
+/*<br>
+Module Operations:<br>
+==================<br>
+This module defines a control class class<br>
+* - The functions defined in this class are used for,<br>
+&gt; Finding out Strong Compnents by matching Dependency keys<br>
+ublic Interface:<br>
+=================<br>
+SCCUtil;SCC;<br>
+Maintenance History:<br>
+====================<br>
+ver 2.0 : 6 April 2017<br>
+- first release<br>
+*/<br>
+#include&lt;iostream&gt;<br>
+#include &lt;list&gt;<br>
+#include &lt;stack&gt;<br>
+#include&lt;math.h&gt;<br>
+#include&lt;algorithm&gt;<br>
+#include&lt;vector&gt;<br>
+#include &lt;unordered_map&gt;<br>
+#define NIL -1<br>
+using namespace std;<br>
+<br>
+/////////////////////////////////////////////////////////////////////<br>
+// Graph Class used to store the dependency files as a graph<br>
+// -to find the strong Component class<br>
+// <br>
+class Graph<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+	int V;    <br>
+	list&lt;int&gt; *adj;    <br>
+	void SCCUtil(int u, int disc[], int low[],<br>
+		stack&lt;int&gt; *st, bool stackMember[]);<br>
+	std::vector&lt;std::vector&lt;int&gt;&gt; bigvec;<br>
+<br>
+public:<br>
+	Graph(int V);   <br>
+	void addEdge(int v, int w);   <br>
+	std::vector&lt;std::vector&lt;int&gt;&gt;  SCC();    <br>
+}</div>;<br>
+<br>
+Graph::Graph(int V)<br>
+{<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+	this-&gt;V = V;<br>
+	adj = new list&lt;int&gt;[V];<br>
+}</div><br>
+<br>
+void Graph::addEdge(int v, int w)<br>
+{<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+	adj[v].push_back(w);<br>
+}</div><br>
+<br>
+<br>
+//FUnction to store the strong component values<br>
+void Graph::SCCUtil(int u, int disc[], int low[], stack&lt;int&gt; *st,bool stackMember[])<br>
+{<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+std::vector&lt;int&gt; vector;<br>
+static int time = 0;<br>
+disc[u] = low[u] = ++time;<br>
+st-&gt;push(u);<br>
+stackMember[u] = true;<br>
+list&lt;int&gt;::iterator i;<br>
+for (i = adj[u].begin(); i != adj[u].end(); ++i)<br>
+{<br>
+int v = *i;  <br>
+if (disc[v] == -1)<br>
+{<br>
+SCCUtil(v, disc, low, st, stackMember);<br>
+low[u] = min(low[u], low[v]);<br>
+}<br>
+else if (stackMember[v] == true)<br>
+low[u] = min(low[u], disc[v]);<br>
+}<br>
+int w = 0;  <br>
+vector.erase(vector.begin(), vector.end());<br>
+if (low[u] == disc[u])<br>
+{<br>
+while (st-&gt;top() != u)<br>
+{<br>
+w = (int)st-&gt;top();<br>
+//cout &lt;&lt; w &lt;&lt; " ";<br>
+vector.push_back(w);<br>
+stackMember[w] = false;<br>
+st-&gt;pop();<br>
+}<br>
+w = (int)st-&gt;top();<br>
+//cout &lt;&lt; w &lt;&lt; "\n";<br>
+vector.push_back(w);<br>
+stackMember[w] = false;<br>
+st-&gt;pop();<br>
+}<br>
+bigvec.push_back(vector);<br>
+}</div><br>
+<br>
+<br>
+//Function to call SCC Util<br>
+std::vector&lt;std::vector&lt;int&gt;&gt; Graph::SCC()<br>
+{<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+    int *disc = new int[V];<br>
+	int *low = new int[V];<br>
+	bool *stackMember = new bool[V];<br>
+	stack&lt;int&gt; *st = new stack&lt;int&gt;();<br>
+<br>
+	for (int i = 0; i &lt; V; i++)<br>
+	{<br>
+		disc[i] = NIL;<br>
+		low[i] = NIL;<br>
+		stackMember[i] = false;<br>
+	}<br>
+<br>
+	<br>
+	for (int i = 0; i &lt; V; i++)<br>
+		if (disc[i] == NIL)<br>
+			SCCUtil(i, disc, low, st, stackMember);<br>
+<br>
+	return bigvec;<br>
+<br>
+}</div><br>
+<br>
+<//pre><//body><//html>

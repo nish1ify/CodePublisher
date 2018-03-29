@@ -1,0 +1,296 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "AbstrSynTree.h.htm">AbstrSynTree.h - </a><br><a href = "ActionsAndRules.h.htm">ActionsAndRules.h - </a><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "Cpp11-BlockingQueue.cpp.htm">Cpp11-BlockingQueue.cpp - </a><br><a href = "CppProperties.h.htm">CppProperties.h - </a><br><a href = "FileSystem.h.htm">FileSystem.h - </a><br><a href = "GrammarHelpers.cpp.htm">GrammarHelpers.cpp - </a><br><a href = "ScopeStack.h.htm">ScopeStack.h - </a><br><a href = "Tokenizer.h.htm">Tokenizer.h - </a><br><a href = "TypeTable.h.htm">TypeTable.h - </a><br><br><br>﻿#pragma once<br>
+/////////////////////////////////////////////////////////////////////<br>
+//  TypeTable.h -  Class analysing types                           //<br>
+//  ver 1.0                                                        //<br>
+//                                                                 //<br>
+//  Language:      Visual C++ 2008, SP1                            //<br>
+//  Platform:      Dell Inspiron, Windows 8.1			           //<br>
+//  Application:   CodeAnalyzerEx - CIS 687 Project 3             //<br>
+//  Author:        Nishanth Chandrasekaran SUID:215242434		   //<br>
+/////////////////////////////////////////////////////////////////////<br>
+/*<br>
+Module Operations:<br>
+==================<br>
+This module defines a TypeAnalysis class c<br>
+* - The functions defined in this class are used for,<br>
+&gt; Type Analysis and buidling a typetable<br>
+Public Interface:<br>
+=================<br>
+doActivity<br>
+Build Process:<br>
+==============<br>
+Required files<br>
+-CppProperties<br>
+-Tokenizer<br>
+-Parser<br>
+Maintenance History:<br>
+====================<br>
+ver 2.0 : 6 April 2017<br>
+- first release<br>
+*/<br>
+#include &lt;unordered_map&gt;<br>
+#include &lt;string&gt;<br>
+#include &lt;sstream&gt;<br>
+#include &lt;vector&gt;<br>
+#include &lt;iomanip&gt;<br>
+#include &lt;iostream&gt;<br>
+#include "../CppProperties/CppProperties.h"<br>
+#include "../Logger/Logger.h"<br>
+#include "../Parser/ActionsAndRules.h"<br>
+#include &lt;iostream&gt;<br>
+#include &lt;functional&gt;<br>
+#include&lt;stack&gt;<br>
+<br>
+<br>
+#pragma warning (disable : 4101)  // disable warning re unused variable x, below<br>
+<br>
+<br>
+/////////////////////////////////////////////////////////////////////<br>
+// Element class represents a data record in our NoSql database<br>
+// - in our NoSql database that is just the value in a key/value pair<br>
+// - it needs to store filename,typename,using namespace<br>
+//<br>
+namespace CodeAnalysis<br>
+{<br>
+	class Element<br>
+	{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+	public:<br>
+		using Type = std::string;<br>
+		using Namespace = std::string;<br>
+		using Filename = std::string;<br>
+<br>
+		Property&lt;Type&gt; tname;            // metadata<br>
+		Property&lt;Namespace&gt; nspace;    // metadata<br>
+		Property&lt;Filename&gt; filename;    // metadata<br>
+<br>
+		std::string show();<br>
+	}</div>;<br>
+<br>
+<br>
+	std::string Element::show()<br>
+	{<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+		// show children when you've implemented them<br>
+<br>
+		std::ostringstream out;<br>
+		out.setf(std::ios::adjustfield, std::ios::left);<br>
+		out &lt;&lt; "\n";<br>
+		out &lt;&lt; "    " &lt;&lt; std::setw(10) &lt;&lt; "TypeName";<br>
+		out &lt;&lt; "    " &lt;&lt; std::setw(20) &lt;&lt; "Using NameSpace";<br>
+		out &lt;&lt; "    " &lt;&lt; std::setw(25) &lt;&lt; "FileName";<br>
+<br>
+		out &lt;&lt; "\n";<br>
+<br>
+		out &lt;&lt; "    " &lt;&lt; std::setw(10) &lt;&lt; "-------";<br>
+		out &lt;&lt; "    " &lt;&lt; std::setw(20) &lt;&lt; "-------";<br>
+		out &lt;&lt; "    " &lt;&lt; std::setw(25) &lt;&lt; "-------";<br>
+<br>
+		out &lt;&lt; "\n";<br>
+<br>
+<br>
+		out &lt;&lt; "    " &lt;&lt; std::setw(10) &lt;&lt; tname;<br>
+		out &lt;&lt; "    " &lt;&lt; std::setw(20) &lt;&lt; nspace;<br>
+		out &lt;&lt; "    " &lt;&lt; std::setw(25) &lt;&lt; filename;<br>
+		out &lt;&lt; "\n";<br>
+		return out.str();<br>
+	}</div><br>
+	class NoSqlDb<br>
+	{<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+	public:<br>
+		using Key = std::string;<br>
+		using Keys = std::vector&lt;Key&gt;;<br>
+		Keys keys();<br>
+		bool save(Key key, Element elem);<br>
+		std::vector&lt;Element&gt; NoSqlDb::value(Key key);<br>
+		size_t count();<br>
+		void NoSqlDb::showKeys(Keys list);<br>
+	private:<br>
+		using Item = std::pair&lt;Key, std::vector&lt;Element&gt;&gt;;<br>
+		std::unordered_map&lt;Key, std::vector&lt;Element&gt;&gt; store;<br>
+	}</div>;<br>
+<br>
+	//Returns the keys of the DataBase<br>
+<br>
+	typename NoSqlDb::Keys NoSqlDb::keys()<br>
+	{<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+		Keys keys;<br>
+		for (Item item : store)<br>
+		{<br>
+			keys.push_back(item.first);<br>
+		}<br>
+		return keys;<br>
+	}</div><br>
+<br>
+<br>
+	//Saves new element to the Database<br>
+<br>
+	bool NoSqlDb::save(Key key, Element elem)<br>
+	{<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+		std::vector&lt;Element&gt; vec;<br>
+		vec.push_back(elem);<br>
+<br>
+<br>
+		if (store.find(key) != store.end())<br>
+			return false;<br>
+		store[key] = vec;<br>
+		return true;<br>
+	}</div><br>
+<br>
+<br>
+<br>
+<br>
+	//Returns the Element of a certain key in the Database<br>
+<br>
+	std::vector&lt;Element&gt; NoSqlDb::value(Key key)<br>
+	{<button id ="994"onclick="myFunction6();toggleText6(this.id); ">-</button><div id = "myDIV6"><br>
+		std::vector&lt;Element&gt; vec;<br>
+		if (store.find(key) == store.end())<br>
+		{<br>
+			return vec;<br>
+		}<br>
+<br>
+<br>
+		return store[key];<br>
+<br>
+	}</div><br>
+<br>
+	//Returns count of the DataBase<br>
+<br>
+	size_t NoSqlDb::count()<br>
+	{<button id ="993"onclick="myFunction7();toggleText7(this.id); ">-</button><div id = "myDIV7"><br>
+		return store.size();<br>
+	}</div><br>
+<br>
+<br>
+<br>
+	//Displays all keys in the Database<br>
+<br>
+	void NoSqlDb::showKeys(Keys list)<br>
+	{<button id ="992"onclick="myFunction8();toggleText8(this.id); ">-</button><div id = "myDIV8"><br>
+		for (Key k : list)<br>
+		{<br>
+			std::cout &lt;&lt; "\t" &lt;&lt; k &lt;&lt; "\n";<br>
+		}<br>
+		return;<br>
+	}</div><br>
+<br>
+<br>
+	<br>
+<br>
+<br>
+<br>
+	/////////////////////////////////////////////////////////////////////<br>
+	// TypeAnalysis class is a key/value pair in-memory database<br>
+	// - stores and retrieves elements from the AST Node<br>
+	//<br>
+<br>
+	class TypeAnalysis<br>
+	{<button id ="991"onclick="myFunction9();toggleText9(this.id); ">-</button><div id = "myDIV9"><br>
+	public:<br>
+		using SPtr = std::shared_ptr&lt;ASTNode*&gt;;<br>
+		std::stack&lt;std::string&gt; stack;<br>
+<br>
+		std::unordered_map&lt;std::string, std::unordered_map&lt;size_t, size_t&gt;&gt; cob;<br>
+<br>
+		TypeAnalysis();<br>
+		std::unordered_map&lt;std::string, std::unordered_map&lt;size_t, size_t&gt;&gt; doTypeAnalysis(NoSqlDb& db);<br>
+	private:<br>
+		void DFSearch(ASTNode* pNode, NoSqlDb& db);<br>
+		AbstrSynTree& ASTref_;<br>
+		ScopeStack&lt;ASTNode*&gt; scopeStack_;<br>
+		Scanner::Toker& toker_;<br>
+<br>
+	}</div>;<br>
+<br>
+	//Gets the instances of the ASTNode , ScopeStack,Toker<br>
+	inline TypeAnalysis::TypeAnalysis() :<br>
+		ASTref_(Repository::getInstance()-&gt;AST()),<br>
+		scopeStack_(Repository::getInstance()-&gt;scopeStack()),<br>
+		toker_(*(Repository::getInstance()-&gt;Toker()))<br>
+	{<button id ="990"onclick="myFunction10();toggleText10(this.id); ">-</button><div id = "myDIV10"><br>
+		std::function&lt;void()&gt; test = [] { int x; };<br>
+	}</div><br>
+<br>
+	inline bool doDisp(ASTNode* pNode)<br>
+	{<button id ="989"onclick="myFunction11();toggleText11(this.id); ">-</button><div id = "myDIV11"><br>
+		static std::string toDisplay[] = {<br>
+			   "lambda", "class", "struct", "enum", "alias", "typedef", };<br>
+		<br>
+		static std::string toDisplayHtml[] = {<br>
+		     "class", "function" };<br>
+<br>
+<br>
+		for (std::string type : toDisplay)<br>
+		{<br>
+			if (pNode-&gt;type_ == type)<br>
+				return true;<br>
+		}<br>
+		return false;<br>
+	}</div><br>
+	inline void TypeAnalysis::DFSearch(ASTNode* pNode, NoSqlDb& db)<br>
+	{std::unordered_map&lt;size_t,size_t&gt; htmlBIGvec;<br>
+     size_t startLine = 0;<br>
+	 size_t endLine = 0;<br>
+     std::vector&lt;std::string&gt; vec;<br>
+	 Element elem1;<br>
+	 static std::string path = "";<br>
+	if (pNode-&gt;path_ != path)<br>
+		{<br>
+		path = pNode-&gt;path_;<br>
+		}<br>
+	if (pNode-&gt;type_ == "namespace")<br>
+		{stack.push(pNode-&gt;name_);<br>
+		}<br>
+    if (pNode-&gt;type_ == "class" || pNode-&gt;type_ == "function" && (pNode-&gt;startLineCount_ != pNode-&gt;endLineCount_) && ((pNode-&gt;startLineCount_ +1)!= pNode-&gt;endLineCount_) )<br>
+		{startLine = pNode-&gt;startLineCount_;<br>
+		endLine = pNode-&gt;endLineCount_;<br>
+	    htmlBIGvec = cob[pNode-&gt;package_];<br>
+		htmlBIGvec[startLine] = endLine;<br>
+       cob[pNode-&gt;package_] = htmlBIGvec;<br>
+		}<br>
+        if (doDisp(pNode))<br>
+		{elem1.tname = pNode-&gt;type_;<br>
+		elem1.filename = pNode-&gt;package_;<br>
+		if (stack.size() == 0)<br>
+		{elem1.nspace = "Mama";<br>
+         }<br>
+		else<br>
+		{elem1.nspace = stack.top();<br>
+        }<br>
+		db.save(pNode-&gt;name_, elem1);<br>
+		}<br>
+		if (pNode-&gt;type_ == "namespace"  && pNode-&gt;name_ == "Global Namespace")<br>
+		{for (auto pchild : pNode-&gt;children_)<br>
+			{if (pchild-&gt;type_ == "function" && pchild-&gt;name_ != "main")<br>
+				{elem1.tname = pchild-&gt;type_;<br>
+					elem1.filename = pchild-&gt;package_;<br>
+					elem1.nspace = pNode-&gt;name_;<br>
+					db.save(pchild-&gt;name_, elem1);<br>
+				}}}<br>
+		for (auto pChild : pNode-&gt;children_)<br>
+		{if (pChild-&gt;parentType_ == "namespace")<br>
+			{stack.push(pNode-&gt;name_);<br>
+			}<br>
+			DFSearch(pChild, db);<br>
+			if (pChild-&gt;parentType_ == "namespace")<br>
+			{stack.pop();<br>
+			}<br>
+		}</div>}</div><br>
+<br>
+	<br>
+<br>
+	//Function performs TypeAnalysis<br>
+	inline std::unordered_map&lt;std::string, std::unordered_map&lt;size_t, size_t&gt;&gt; TypeAnalysis::doTypeAnalysis(NoSqlDb& db)<br>
+	{<button id ="988"onclick="myFunction12();toggleText12(this.id); ">-</button><div id = "myDIV12"><br>
+		<br>
+		ASTNode* pRoot = ASTref_.root();<br>
+		DFSearch(pRoot,db);<br>
+<br>
+		return cob;<br>
+<br>
+	}</div><br>
+}<br>
+<br>
+<br>
+<br>
+<br>
+<//pre><//body><//html>

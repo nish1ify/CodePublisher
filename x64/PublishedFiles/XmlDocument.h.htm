@@ -1,0 +1,164 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "ScopeStack.cpp.htm">ScopeStack.cpp - </a><br><a href = "Test1.cpp.htm">Test1.cpp - </a><br><a href = "XmlDocument.h.htm">XmlDocument.h - </a><br><a href = "XmlElement.h.htm">XmlElement.h - </a><br><br><br>#ifndef XMLDOCUMENT_H<br>
+#define XMLDOCUMENT_H<br>
+///////////////////////////////////////////////////////////////////<br>
+// XmlDocument.h - a container of XmlElement nodes               //<br>
+// Ver 2.2                                                       //<br>
+// Application: Help for CSE687 Pr#2, Spring 2015                //<br>
+// Platform:    Dell XPS 2720, Win 8.1 Pro, Visual Studio 2013   //<br>
+// Author:      Jim Fawcett, CST 4-187, 443-3948                 //<br>
+//              jfawcett@twcny.rr.com                            //<br>
+///////////////////////////////////////////////////////////////////<br>
+/*<br>
+* Package Operations:<br>
+* -------------------<br>
+* This package is intended to help students in CSE687 - Object Oriented Design<br>
+* get started with Project #2 - XML Document Model.  It uses C++11 constructs,<br>
+* most noteably std::shared_ptr.  The XML Document Model is essentially<br>
+* a program-friendly wrapper around an Abstract Syntax Tree (AST) used to<br>
+* contain the results of parsing XML markup.<br>
+*<br>
+* Abstract Syntax Trees, defined in this package, are unordered trees with <br>
+* two types of nodes:<br>
+*   Terminal nodes     - nodes with no children<br>
+*   Non-Terminal nodes - nodes which may have a finite number of children<br>
+* They are often used to contain the results of parsing some language.<br>
+*<br>
+* The elements defined in the companion package, XmlElement, will be used in<br>
+* the AST defined in this package.  They are:<br>
+*   AbstractXmlElement - base for all the XML Element types<br>
+*   DocElement         - XML element with children designed to hold prologue, Xml root, and epilogue<br>
+*   TaggedElement      - XML element with tag, attributes, child elements<br>
+*   TextElement        - XML element with only text, no markup<br>
+*   CommentElement     - XML element with comment markup and text<br>
+*   ProcInstrElement   - XML element with markup and attributes but no children<br>
+*   XmlDeclarElement   - XML declaration element with attributes but no children<br>
+*<br>
+* Required Files:<br>
+* ---------------<br>
+*   - XmlDocument.h, XmlDocument.cpp, <br>
+*     XmlElement.h, XmlElement.cpp<br>
+*<br>
+* Build Process:<br>
+* --------------<br>
+*   devenv AST.sln /debug rebuild<br>
+*<br>
+* Maintenance History:<br>
+* --------------------<br>
+* ver 2.2 : 01 Jun 2015<br>
+* - added building document from XML file using XmlParser in constructor<br>
+* - added test to teststub<br>
+* ver 2.1 : 07 Mar 2015<br>
+* - added an XmlDocument method DFS(...) to implement Depth First Search.<br>
+*   This isn't really needed, but was added to illustrate the answer to<br>
+*   a Midterm question.<br>
+* ver 2.0 : 04 Mar 2015<br>
+* This version can programmatically create, edit, and save an XML document.<br>
+* It is not yet able to parse an XML string or file.<br>
+* - deleted copy constructor and assignment operator<br>
+* - defined move constructor and move assignment<br>
+* - defined search methods element, elements, descendents, select, find<br>
+* - defined access methods docElement() and xmlRoot()<br>
+* - defined toString()<br>
+* ver 1.2 : 21 Feb 2015<br>
+* - modified these comments<br>
+* ver 1.1 : 14 Feb 2015<br>
+* - minor changes to comments, method arguments<br>
+* Ver 1.0 : 11 Feb 2015<br>
+* - first release<br>
+*<br>
+* ToDo:<br>
+* -----<br>
+* This is the beginning of an XmlDocument class for Project #2.  <br>
+* It lays out a suggested design, which you are not compelled to follow.<br>
+* If it helps then use it.  If not you don't have to.<br>
+*<br>
+* Note that I've simply roughed in a design that is similar to that<br>
+* used in the .Net Framework XDocument class.<br>
+*/<br>
+<br>
+#include &lt;memory&gt;<br>
+#include &lt;string&gt;<br>
+#include "../XmlElement/XmlElement.h"<br>
+<br>
+namespace XmlProcessing<br>
+{<br>
+  ///////////////////////////////////////////////////////////////////////////<br>
+  // XmlDocument class<br>
+<br>
+  class XmlDocument<br>
+  {<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+  public:<br>
+    using sPtr = std::shared_ptr &lt; AbstractXmlElement &gt; ;<br>
+    enum sourceType { file, str };<br>
+<br>
+    // construction and assignment<br>
+<br>
+    XmlDocument(sPtr pRoot = nullptr) : pDocElement_(pRoot) {}<br>
+    XmlDocument(const std::string& src, sourceType srcType=str);<br>
+    XmlDocument(const XmlDocument& doc) = delete;<br>
+    XmlDocument(XmlDocument&& doc);<br>
+    XmlDocument& operator=(const XmlDocument& doc) = delete;<br>
+    XmlDocument& operator=(XmlDocument&& doc);<br>
+<br>
+    // access to docElement and XML root<br>
+<br>
+    std::shared_ptr&lt;AbstractXmlElement&gt;& docElement() { return pDocElement_;  }<br>
+    std::shared_ptr&lt;AbstractXmlElement&gt; xmlRoot();<br>
+    bool xmlRoot(sPtr pRoot);<br>
+<br>
+    // queries return XmlDocument references so they can be chained, e.g., doc.element("foobar").descendents();<br>
+<br>
+    XmlDocument& element(const std::string& tag);           // found_[0] contains first element (DFS order) with tag<br>
+    XmlDocument& elements(const std::string& tag);          // found_ contains all children of first element with tag<br>
+    XmlDocument& descendents(const std::string& tag = "");  // found_ contains descendents of prior found_[0]<br>
+    std::vector&lt;sPtr&gt; select();                             // returns found_.  Uses std::move(found_) to clear found_<br>
+    bool find(const std::string& tag, sPtr pElem, bool findall = true);<br>
+<br>
+    size_t size();<br>
+    std::string toString();<br>
+    template&lt;typename CallObj&gt;<br>
+    void DFS(sPtr pElem, CallObj& co);<br>
+  private:<br>
+    sPtr pDocElement_;         // AST that holds procInstr, comments, XML root, and more comments<br>
+    std::vector&lt;sPtr&gt; found_;  // query results<br>
+  }</div>;<br>
+<br>
+  //----&lt; search subtree of XmlDocument &gt;------------------------------------<br>
+<br>
+  template&lt;typename CallObj&gt;<br>
+  void XmlDocument::DFS(sPtr pElem, CallObj& co)<br>
+  {<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+    co(*pElem);<br>
+    for (auto pChild : pElem-&gt;children())<br>
+      DFS(pChild, co);<br>
+  }</div><br>
+  ///////////////////////////////////////////////////////////////////////////<br>
+  // Global Functions for Depth First Search<br>
+  //<br>
+  //   These functions take a callable object to define processing on each<br>
+  //   element encountered on search traversal.  They may be functions,<br>
+  //   functors, or lambdas - see XmlDocument.cpp for examples.<br>
+<br>
+  //----&lt; search subtree of XmlDocument &gt;------------------------------------<br>
+<br>
+  template&lt;typename CallObj&gt;<br>
+  void DFS(XmlDocument::sPtr pElem, CallObj& co)<br>
+  {<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+    using sPtr = XmlDocument::sPtr;<br>
+    co(*pElem);<br>
+    for (auto pChild : pElem-&gt;children())<br>
+      DFS(pChild, co);<br>
+  }</div><br>
+  //----&lt; search entire XmlDocument &gt;----------------------------------------<br>
+<br>
+  template&lt;typename CallObj&gt;<br>
+  void DFS(XmlDocument& doc, CallObj& co)<br>
+  {<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+    using sPtr = XmlDocument::sPtr;<br>
+<br>
+    sPtr pDocElem = doc.docElement();<br>
+    DFS(pDocElem, co);<br>
+  }</div><br>
+}<br>
+#endif<br>
+<//pre><//body><//html>

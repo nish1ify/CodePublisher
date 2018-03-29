@@ -1,0 +1,83 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "Convert.h.htm">Convert.h - </a><br><a href = "FileSystem.cpp.htm">FileSystem.cpp - </a><br><a href = "Test1.cpp.htm">Test1.cpp - </a><br><a href = "Tokenizer.h.htm">Tokenizer.h - </a><br><br><br>/////////////////////////////////////////////////////////////////////<br>
+// TemplatesIntro.cpp - Demonstrate Template Syntax                //<br>
+//                                                                 //<br>
+// Jim Fawcett, CSE687 - Object Oriented Design, Spring 2017       //<br>
+/////////////////////////////////////////////////////////////////////<br>
+<br>
+#include "Convert.h"<br>
+#include &lt;string&gt;<br>
+#include &lt;iostream&gt;<br>
+#include &lt;functional&gt;<br>
+<br>
+/////////////////////////////////////////////////////////////////////<br>
+// Widget class - shows user defined types can be template arguments<br>
+<br>
+class Widget<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+public:<br>
+  Widget(const std::string& str = "") : state(str) {}<br>
+  std::string& value() { return state; }<br>
+private:<br>
+  std::string state;<br>
+}</div>;<br>
+<br>
+std::ostream& operator&lt;&lt;(std::ostream& out, Widget& widget)<br>
+{<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+  out &lt;&lt; widget.value();<br>
+  return out;<br>
+}</div><br>
+<br>
+std::istream& operator &gt;&gt; (std::istream& in, Widget& widget)<br>
+{<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+  std::string temp;<br>
+  while (in.good())  // extract all the words from widget's string state<br>
+  {<br>
+    in &gt;&gt; temp;<br>
+    widget.value() += temp + " ";<br>
+  }<br>
+  return in;<br>
+}</div><br>
+<br>
+/////////////////////////////////////////////////////////////////////<br>
+// lambdas that provide mildly useful local processing<br>
+<br>
+std::function&lt;void()&gt; putLine = []() { std::wcout &lt;&lt; "\n"; };<br>
+<br>
+std::function&lt;void(size_t)&gt; putLines = [](size_t n) {<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+  for (size_t i = 0; i &lt; n; ++i)<br>
+    putLine();<br>
+};<br>
+<br>
+std::function&lt;void(const std::string&, char)&gt; titleCore = [](const std::string& msg, char underline='-') {<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+  std::cout &lt;&lt; "\n  " &lt;&lt; msg.c_str();<br>
+  std::wcout &lt;&lt; "\n " &lt;&lt; std::string(msg.size() + 2, underline).c_str();<br>
+};<br>
+<br>
+std::function&lt;void(const std::string&)&gt; Title = [](const std::string& msg) { titleCore(msg, '='); };<br>
+<br>
+std::function&lt;void(const std::string&)&gt; title = [](const std::string& msg) { titleCore(msg, '-'); };<br>
+<br>
+/////////////////////////////////////////////////////////////////////<br>
+// Demo code<br>
+<br>
+int main()<br>
+{<button id ="994"onclick="myFunction6();toggleText6(this.id); ">-</button><div id = "myDIV6"><br>
+  Title("Demonstrating Templates");<br>
+  putLine();<br>
+<br>
+  title("Demonstrating Conversion of numerical types");<br>
+  std::cout &lt;&lt; "\n  conversion of integer: " &lt;&lt; Convert&lt;int&gt;::toString(42);<br>
+  std::cout &lt;&lt; "\n  conversion of double:  " &lt;&lt; Convert&lt;double&gt;::toString(3.1415927);<br>
+  putLine();<br>
+<br>
+  title("Demonstrating Conversion of Widget type");<br>
+  Widget widget("Joe Widget");<br>
+  std::string widgetStore = Convert&lt;Widget&gt;::toString(widget);<br>
+  std::cout &lt;&lt; "\n  conversion of Widget: " &lt;&lt; widgetStore;<br>
+<br>
+  Widget newWidget = Convert&lt;Widget&gt;::fromString(widgetStore);<br>
+  std::cout &lt;&lt; "\n  newWidget state = " &lt;&lt; newWidget.value();<br>
+<br>
+  putLines(2);<br>
+}<br>
+<//pre><//body><//html>

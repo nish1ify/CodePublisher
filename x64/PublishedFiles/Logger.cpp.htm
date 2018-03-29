@@ -1,0 +1,193 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "FileSystem.cpp.htm">FileSystem.cpp - </a><br><a href = "Logger.cpp.htm">Logger.cpp - </a><br><a href = "Logger.h.htm">Logger.h - </a><br><a href = "Utilities.h.htm">Utilities.h - </a><br><br><br>/////////////////////////////////////////////////////////////////////<br>
+// Logger.cpp - log text messages to std::ostream                  //<br>
+// ver 1.2                                                         //<br>
+//-----------------------------------------------------------------//<br>
+// Jim Fawcett (c) copyright 2015                                  //<br>
+// All rights granted provided this copyright notice is retained   //<br>
+//-----------------------------------------------------------------//<br>
+// Language:    C++, Visual Studio 2015                            //<br>
+// Application: Several Projects, CSE687 - Object Oriented Design  //<br>
+// Author:      Jim Fawcett, Syracuse University, CST 4-187        //<br>
+//              jfawcett@twcny.rr.com                              //<br>
+/////////////////////////////////////////////////////////////////////<br>
+<br>
+#include &lt;functional&gt;<br>
+#include &lt;fstream&gt;<br>
+#include &lt;windows.h&gt;<br>
+#include "Logger.h"<br>
+#include "../Utilities/Utilities.h"<br>
+<br>
+using namespace Logging;<br>
+<br>
+//----&lt; send text message to std::ostream &gt;--------------------------<br>
+<br>
+void Logger::write(const std::string& msg)<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+  if(_ThreadRunning)<br>
+    _queue.enQ(msg);<br>
+}</div><br>
+void Logger::title(const std::string& msg, char underline)<br>
+{<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+  std::string temp = "\n  " + msg + "\n " + std::string(msg.size() + 2, underline);<br>
+  write(temp);<br>
+}</div><br>
+//----&lt; attach logger to existing std::ostream &gt;---------------------<br>
+<br>
+void Logger::attach(std::ostream* pOut) <br>
+{ <br>
+  streams_.push_back(pOut);<br>
+  //_pOut = pOut; <br>
+}</div><br>
+//----&lt; start logging &gt;----------------------------------------------<br>
+/*<br>
+ *  log to all the attached streams<br>
+ */<br>
+void Logger::start()<br>
+{<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+  if (_ThreadRunning)<br>
+    return;<br>
+  _ThreadRunning = true;<br>
+  std::function&lt;void()&gt; tp = [=]() {<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+    while (true)<br>
+    {<br>
+      std::string msg = _queue.deQ();<br>
+      if (msg == "quit")<br>
+      {<br>
+        _ThreadRunning = false;<br>
+        break;<br>
+      }<br>
+      for (auto pStrm : streams_)<br>
+      {<br>
+        *pStrm &lt;&lt; msg;<br>
+      }<br>
+    }</div><br>
+  };<br>
+  _pThr = new std::thread (tp);<br>
+  //thr.detach();<br>
+}</div><br>
+//----&lt; has logger been started? &gt;-----------------------------------<br>
+<br>
+bool Logger::running()<br>
+{<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+  return _ThreadRunning;<br>
+}</div><br>
+//----&lt; suspend logger &gt;---------------------------------------------<br>
+<br>
+void Logger::pause(bool doPause)<br>
+{<button id ="994"onclick="myFunction6();toggleText6(this.id); ">-</button><div id = "myDIV6"><br>
+  if (doPause)<br>
+  {<br>
+    _Paused = true;<br>
+    ::SuspendThread(_pThr-&gt;native_handle());<br>
+  }<br>
+  else<br>
+  {<br>
+    _Paused = false;<br>
+    ::ResumeThread(_pThr-&gt;native_handle());<br>
+  }<br>
+}</div><br>
+//----&lt; is logger currently paused? &gt;--------------------------------<br>
+<br>
+bool Logger::paused()<br>
+{<button id ="993"onclick="myFunction7();toggleText7(this.id); ">-</button><div id = "myDIV7"><br>
+  return _Paused;<br>
+}</div><br>
+//----&lt; wait for logging to empty input queue &gt;----------------------<br>
+<br>
+void Logger::flush()<br>
+{<button id ="992"onclick="myFunction8();toggleText8(this.id); ">-</button><div id = "myDIV8"><br>
+  if (_ThreadRunning && !_Paused)<br>
+  {<br>
+    while (_queue.size() &gt; 0)<br>
+      ;<br>
+    for (auto pStream : streams_)<br>
+      pStream-&gt;flush();<br>
+  }<br>
+}</div><br>
+//----&lt; stop logging &gt;-----------------------------------------------<br>
+<br>
+void Logger::stop(const std::string& msg)<br>
+{<button id ="991"onclick="myFunction9();toggleText9(this.id); ">-</button><div id = "myDIV9"><br>
+  if (_ThreadRunning)<br>
+  {<br>
+    if(msg != "")<br>
+      write(msg);<br>
+    write("quit");    // request thread to stop<br>
+    if (_pThr-&gt;joinable())<br>
+      _pThr-&gt;join();  // wait for queue to empty<br>
+<br>
+    _ThreadRunning = false;<br>
+  }<br>
+}</div><br>
+//----&lt; wait for logger to finish &gt;----------------------------------<br>
+<br>
+void Logger::wait()<br>
+{<button id ="990"onclick="myFunction10();toggleText10(this.id); ">-</button><div id = "myDIV10"><br>
+  if (_ThreadRunning && _pThr-&gt;joinable())<br>
+    _pThr-&gt;join();<br>
+}</div><br>
+//----&lt; stop logging thread &gt;----------------------------------------<br>
+<br>
+Logger::~Logger()<br>
+{<button id ="989"onclick="myFunction11();toggleText11(this.id); ">-</button><div id = "myDIV11"><br>
+  stop();<br>
+}</div><br>
+<br>
+struct Cosmetic<br>
+{<br>
+  ~Cosmetic() { std::cout &lt;&lt; "\n\n"; }<br>
+} cosmetic;<br>
+<br>
+#ifdef TEST_LOGGER<br>
+<br>
+using Util = Utilities::StringHelper;<br>
+<br>
+int main()<br>
+{<button id ="988"onclick="myFunction12();toggleText12(this.id); ">-</button><div id = "myDIV12"><br>
+  //Util::Title("Testing Logger Class");<br>
+  Logger log;<br>
+  log.attach(&std::cout);<br>
+  std::ofstream out("logFile.txt");<br>
+  if (out.good())<br>
+    log.attach(&out);<br>
+  else<br>
+    std::cout &lt;&lt; "\n  couldn't open logFile for writing";<br>
+  log.write("\n  won't get logged - not started yet");<br>
+  log.start();<br>
+  log.title("Testing Logger Class", '=');<br>
+  log.write("\n  one");<br>
+  log.write("\n  two");<br>
+  log.write("\n  fini");<br>
+  log.stop();<br>
+  log.write("\n  won't get logged - stopped");<br>
+  log.start();<br>
+  log.write("\n  starting again");<br>
+  log.write("\n  and stopping again");<br>
+  log.stop("\n  log terminating now");<br>
+  log.wait();<br>
+<br>
+  StaticLogger&lt;1&gt;::attach(&std::cout);<br>
+  StaticLogger&lt;1&gt;::attach(&out);<br>
+  StaticLogger&lt;1&gt;::start();<br>
+  StaticLogger&lt;1&gt;::write("\n");<br>
+  StaticLogger&lt;1&gt;::title("Testing StaticLogger class");<br>
+  StaticLogger&lt;1&gt;::write("\n  static logger at work");<br>
+  Logger& logger = StaticLogger&lt;1&gt;::instance();<br>
+  logger.write("\n  static logger still at work");<br>
+<br>
+  for(size_t i=0; i&lt;5; ++i)<br>
+    logger.write("\n  a log msg");<br>
+  logger.write("\n  suspending logger");<br>
+  logger.pause(true);<br>
+  for (size_t i = 0; i&lt;5; ++i)<br>
+    logger.write("\n  a log msg written while log suspended");<br>
+<br>
+  logger.pause(false);<br>
+  logger.write("\n  a log msg written after log resumed");<br>
+  logger.stop("\n  stopping static logger");<br>
+  logger.wait();<br>
+  out.close();<br>
+}</div><br>
+<br>
+#endif<br>
+<//pre><//body><//html>

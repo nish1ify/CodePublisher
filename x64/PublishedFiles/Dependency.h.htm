@@ -1,0 +1,113 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Dependency.h.htm">Dependency.h - </a><br><a href = "FileSystem.h.htm">FileSystem.h - </a><br><a href = "NoSqlDataBaseApp.h.htm">NoSqlDataBaseApp.h - </a><br><a href = "Tokenizer.h.htm">Tokenizer.h - </a><br><a href = "TypeTable.h.htm">TypeTable.h - </a><br><br><br>#pragma once<br>
+/////////////////////////////////////////////////////////////////////<br>
+//  Dependency.h -  Class analysing dependencies between Fil       //<br>
+//  ver 1.0                                                        //<br>
+//                                                                 //<br>
+//  Language:      Visual C++ 2008, SP1                            //<br>
+//  Platform:      Dell Inspiron, Windows 8.1			           //<br>
+//  Application:   CodeAnalyzerEx - CIS 687 Project 3             //<br>
+//  Author:        Nishanth Chandrasekaran SUID:215242434		   //<br>
+/////////////////////////////////////////////////////////////////////<br>
+/*<br>
+Module Operations:<br>
+==================<br>
+This module defines a control class class<br>
+* - The functions defined in this class are used for,<br>
+&gt; Finding out dependencies by matching typetabl keys<br>
+ublic Interface:<br>
+=================<br>
+doActivity<br>
+Build Process:<br>
+==============<br>
+Required files<br>
+-CppProperties<br>
+-Tokenizer<br>
+-TypeTable<br>
+-Utilities<br>
+-NoSQLDataBaseApp<br>
+Maintenance History:<br>
+====================<br>
+ver 2.0 : 4 Apl 2017<br>
+- first release<br>
+*/<br>
+<br>
+#include &lt;unordered_map&gt;<br>
+#include &lt;string&gt;<br>
+#include &lt;sstream&gt;<br>
+#include &lt;vector&gt;<br>
+#include &lt;iomanip&gt;<br>
+#include &lt;iostream&gt;<br>
+#include &lt;ctime&gt;<br>
+#include "../CppProperties/CppProperties.h"<br>
+#include "../Tokenizer/Tokenizer.h"<br>
+#include "../TypeTable/TypeTable.h"<br>
+#include "../Utilities/Utilities.h"<br>
+#include "../NoSqlDataBaseApp/NoSqlDataBaseApp.h"<br>
+#include "../Publisher/Publisher.h"<br>
+<br>
+using Key = std::string;<br>
+using Keys = std::vector&lt;Key&gt;;<br>
+using File = std::string;<br>
+using Files = std::vector&lt;File&gt;;<br>
+using Pattern = std::string;<br>
+using Ext = std::string;<br>
+using FileMap = std::unordered_map&lt;Pattern, Files&gt;;<br>
+<br>
+/////////////////////////////////////////////////////////////////////<br>
+// Control class represents control flow to obtain Dependency<br>
+<br>
+namespace CodeAnalysis<br>
+	{<br>
+        class control<br>
+		{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+<br>
+		public:<br>
+			int doActivity(NoSqlDb& db, Dependency& dbnew, Files allfiles, std::unordered_map&lt;std::string, std::unordered_map&lt;size_t, size_t&gt;&gt; cob);<br>
+<br>
+		}</div>;<br>
+<br>
+<br>
+//Function to Obtain and store Dependencies Between Files<br>
+int control::doActivity(NoSqlDb& db, Dependency& dbnew, Files allfiles, std::unordered_map&lt;std::string, std::unordered_map&lt;size_t, size_t&gt;&gt; cob)<br>
+{<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+std::cout &lt;&lt; "\n\n The Dependency Analysis for the given command line arguments is\n\n";<br>
+   Keys keys = db.keys();<br>
+std:: vector&lt;ElementItem&gt; veci;<br>
+for (File f : allfiles)<br>
+{ElementItem elemitem;<br>
+try<br>
+{std::string file = FileSystem::Path::getName(f);<br>
+std::ifstream in(f);<br>
+if (!in.good())<br>
+{<br>
+std::cout &lt;&lt; "\n  can't open " &lt;&lt; file &lt;&lt; "\n\n";<br>
+return 1;<br>
+}<br>
+Scanner::Toker toker;<br>
+toker.returnComments(false);<br>
+toker.attach(&in);<br>
+do<br>
+{<br>
+std::string tok = toker.getTok();<br>
+for (std::string key : keys)<br>
+{if (key == tok)<br>
+{for (Element vec : db.value(key))<br>
+{elemitem.childrenList.push_back(vec.filename);<br>
+std::sort(elemitem.childrenList.begin(), elemitem.childrenList.end());<br>
+elemitem.childrenList.erase(std::unique(elemitem.childrenList.begin(), elemitem.childrenList.end()), elemitem.childrenList.end());<br>
+}}}} while (in.good());<br>
+dbnew.save(f, elemitem);<br>
+}<br>
+catch (std::logic_error& ex){<br>
+std::cout &lt;&lt; "\n  " &lt;&lt; ex.what();<br>
+}}<br>
+return 0;<br>
+}</div><br>
+}<br>
+	<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<//pre><//body><//html>

@@ -1,0 +1,246 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "ActionsAndRules.h.htm">ActionsAndRules.h - </a><br><a href = "ConfigureParser.h.htm">ConfigureParser.h - </a><br><a href = "Parser.h.htm">Parser.h - </a><br><a href = "SemiExp.h.htm">SemiExp.h - </a><br><a href = "Test2.cpp.htm">Test2.cpp - </a><br><a href = "Tokenizer.h.htm">Tokenizer.h - </a><br><br><br>/////////////////////////////////////////////////////////////////////<br>
+//  ConfigureParser.cpp - builds and configures parsers            //<br>
+//  ver 3.2                                                        //<br>
+//                                                                 //<br>
+//  Lanaguage:     Visual C++ 2005                                 //<br>
+//  Platform:      Dell Dimension 9150, Windows XP SP2             //<br>
+//  Application:   Prototype for CSE687 Pr1, Sp06                  //<br>
+//  Author:        Jim Fawcett, CST 2-187, Syracuse University     //<br>
+//                 (315) 443-3948, jfawcett@twcny.rr.com           //<br>
+/////////////////////////////////////////////////////////////////////<br>
+<br>
+#include &lt;fstream&gt;<br>
+#include "Parser.h"<br>
+#include "../SemiExp/SemiExp.h"<br>
+#include "../Tokenizer/Tokenizer.h"<br>
+#include "ActionsAndRules.h"<br>
+#include "ConfigureParser.h"<br>
+<br>
+using namespace CodeAnalysis;<br>
+using namespace Scanner;<br>
+<br>
+//----&lt; destructor releases all parts &gt;------------------------------<br>
+<br>
+ConfigParseForCodeAnal::~ConfigParseForCodeAnal()<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+  // when Builder goes out of scope, everything must be deallocated<br>
+<br>
+  delete pHandleBeginScope;<br>
+  delete pBeginScope;<br>
+  delete pHandleEndScope;<br>
+  delete pEndScope;<br>
+  delete pHandlePreprocStatement;<br>
+  delete pPreprocStatement;<br>
+  delete pHandleClassDefinition;<br>
+  delete pClassDefinition;<br>
+  delete pHandleStructDefinition;<br>
+  delete pStructDefinition;<br>
+  //delete pPrintFunction;<br>
+  delete pHandleCppFunctionDefinition;<br>
+  delete pCppFunctionDefinition;<br>
+  delete pHandleCSharpFunctionDefinition;<br>
+  delete pCSharpFunctionDefinition;<br>
+  delete pCppDeclaration;<br>
+  delete pHandleCppDeclaration;<br>
+  delete pCSharpDeclaration;<br>
+  delete pHandleCSharpDeclaration;<br>
+  delete pCppExecutable;<br>
+  delete pHandleCppExecutable;<br>
+  delete pCSharpExecutable;<br>
+  delete pHandleCSharpExecutable;<br>
+  delete pDefault;<br>
+  delete pHandleDefault;<br>
+  delete pRepo;<br>
+  delete pParser;<br>
+  delete pSemi;<br>
+  delete pToker;<br>
+  if(pIn != nullptr)<br>
+    pIn-&gt;close();<br>
+  delete pIn;<br>
+}</div><br>
+//----&lt; attach toker to a file stream or stringstream &gt;------------<br>
+<br>
+bool ConfigParseForCodeAnal::Attach(const std::string& name, bool isFile)<br>
+{<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+  if(pToker == 0)<br>
+    return false;<br>
+  pIn = new std::ifstream(name);<br>
+  if (!pIn-&gt;good())<br>
+    return false;<br>
+  <br>
+  // check for Byte Order Mark (BOM)<br>
+  char a, b, c;<br>
+  a = pIn-&gt;get();<br>
+  b = pIn-&gt;get();<br>
+  c = pIn-&gt;get();<br>
+  if (a != (char)0xEF || b != (char)0xBB || c != (char)0xBF)<br>
+    pIn-&gt;seekg(0);<br>
+<br>
+  if (!pIn-&gt;good())<br>
+  {<br>
+    // empty file, but openable, so return true, avoids error message<br>
+    return true;<br>
+  }<br>
+  return pToker-&gt;attach(pIn);<br>
+}<br>
+//----&lt; Here's where all the parts get assembled &gt;-----------------<br>
+<br>
+Parser* ConfigParseForCodeAnal::Build()<br>
+{<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+  try<br>
+  {<br>
+    // add Parser's main parts<br>
+<br>
+    pToker = new Toker;<br>
+    pToker-&gt;returnComments(false);<br>
+    pSemi = new SemiExp(pToker);<br>
+    pParser = new Parser(pSemi);<br>
+    pRepo = new Repository(pToker);<br>
+<br>
+    // configure to manage scope<br>
+    // these must come first - they return true on match<br>
+    // so rule checking continues<br>
+<br>
+    pBeginScope = new BeginScope();<br>
+    pHandleBeginScope = new HandleBeginScope(pRepo);<br>
+    pBeginScope-&gt;addAction(pHandleBeginScope);<br>
+    pParser-&gt;addRule(pBeginScope);<br>
+<br>
+    pEndScope = new EndScope();<br>
+    pHandleEndScope = new HandleEndScope(pRepo);<br>
+    pEndScope-&gt;addAction(pHandleEndScope);<br>
+    pParser-&gt;addRule(pEndScope);<br>
+<br>
+    // configure to detect and act on function definitions<br>
+    // these will stop further rule checking by returning false<br>
+<br>
+    pPreprocStatement = new PreprocStatement;<br>
+    pHandlePreprocStatement = new HandlePreprocStatement(pRepo);<br>
+    pPreprocStatement-&gt;addAction(pHandlePreprocStatement);<br>
+    pParser-&gt;addRule(pPreprocStatement);<br>
+<br>
+    pNamespaceDefinition = new NamespaceDefinition;<br>
+    pHandleNamespaceDefinition = new HandleNamespaceDefinition(pRepo);<br>
+    pNamespaceDefinition-&gt;addAction(pHandleNamespaceDefinition);<br>
+    pParser-&gt;addRule(pNamespaceDefinition);<br>
+<br>
+	pCppFunctionDefinition = new CppFunctionDefinition;<br>
+	pHandleCppFunctionDefinition = new HandleCppFunctionDefinition(pRepo);  // no action<br>
+	pCppFunctionDefinition-&gt;addAction(pHandleCppFunctionDefinition);<br>
+	pParser-&gt;addRule(pCppFunctionDefinition);<br>
+<br>
+    pClassDefinition = new ClassDefinition;<br>
+    pHandleClassDefinition = new HandleClassDefinition(pRepo);<br>
+    pClassDefinition-&gt;addAction(pHandleClassDefinition);<br>
+    pParser-&gt;addRule(pClassDefinition);<br>
+<br>
+    pStructDefinition = new StructDefinition;<br>
+    pHandleStructDefinition = new HandleStructDefinition(pRepo);<br>
+    pStructDefinition-&gt;addAction(pHandleStructDefinition);<br>
+    pParser-&gt;addRule(pStructDefinition);<br>
+<br>
+    <br>
+<br>
+    pCSharpFunctionDefinition = new CSharpFunctionDefinition;<br>
+    pHandleCSharpFunctionDefinition = new HandleCSharpFunctionDefinition(pRepo);  // no action<br>
+    pCSharpFunctionDefinition-&gt;addAction(pHandleCSharpFunctionDefinition);<br>
+    pParser-&gt;addRule(pCSharpFunctionDefinition);<br>
+<br>
+    // configure to detect and act on declarations and Executables<br>
+<br>
+    pControlDefinition = new ControlDefinition;<br>
+    pHandleControlDefinition = new HandleControlDefinition(pRepo);<br>
+    pControlDefinition-&gt;addAction(pHandleControlDefinition);<br>
+    pParser-&gt;addRule(pControlDefinition);<br>
+<br>
+    pCppDeclaration = new CppDeclaration;<br>
+    pHandleCppDeclaration = new HandleCppDeclaration(pRepo);<br>
+    pCppDeclaration-&gt;addAction(pHandleCppDeclaration);<br>
+    pParser-&gt;addRule(pCppDeclaration);<br>
+<br>
+    pCSharpDeclaration = new CSharpDeclaration;<br>
+    pHandleCSharpDeclaration = new HandleCSharpDeclaration(pRepo);<br>
+    pCSharpDeclaration-&gt;addAction(pHandleCSharpDeclaration);<br>
+    pParser-&gt;addRule(pCSharpDeclaration);<br>
+<br>
+    pCppExecutable = new CppExecutable;<br>
+    pHandleCppExecutable = new HandleCppExecutable(pRepo);<br>
+    pCppExecutable-&gt;addAction(pHandleCppExecutable);<br>
+    pParser-&gt;addRule(pCppExecutable);<br>
+<br>
+    pCSharpExecutable = new CSharpExecutable;<br>
+    pHandleCSharpExecutable = new HandleCSharpExecutable(pRepo);<br>
+    pCSharpExecutable-&gt;addAction(pHandleCSharpExecutable);<br>
+    pParser-&gt;addRule(pCSharpExecutable);<br>
+<br>
+    pDefault = new Default;<br>
+    pHandleDefault = new HandleDefault(pRepo);<br>
+    pDefault-&gt;addAction(pHandleDefault);<br>
+    pParser-&gt;addRule(pDefault);<br>
+<br>
+    return pParser;<br>
+  }<br>
+  catch(std::exception& ex)<br>
+  {<br>
+    std::cout &lt;&lt; "\n\n  " &lt;&lt; ex.what() &lt;&lt; "\n\n";<br>
+    return 0;<br>
+  }<br>
+}</div><br>
+<br>
+#ifdef TEST_CONFIGUREPARSER<br>
+<br>
+#include &lt;queue&gt;<br>
+#include &lt;string&gt;<br>
+<br>
+int main(int argc, char* argv[])<br>
+{<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+  std::cout &lt;&lt; "\n  Testing ConfigureParser module\n "<br>
+            &lt;&lt; std::string(32,'=') &lt;&lt; std::endl;<br>
+<br>
+  // collecting tokens from files, named on the command line<br>
+<br>
+  if(argc &lt; 2)<br>
+  {<br>
+    std::cout <br>
+      &lt;&lt; "\n  please enter name of file to process on command line\n\n";<br>
+    return 1;<br>
+  }<br>
+<br>
+  for(int i=1; i&lt;argc; ++i)<br>
+  {<br>
+    std::cout &lt;&lt; "\n  Processing file " &lt;&lt; argv[i];<br>
+    std::cout &lt;&lt; "\n  " &lt;&lt; std::string(16 + strlen(argv[i]),'-');<br>
+<br>
+    ConfigParseForCodeAnal configure;<br>
+    Parser* pParser = configure.Build();<br>
+    try<br>
+    {<br>
+      if(pParser)<br>
+      {<br>
+        if(!configure.Attach(argv[i]))<br>
+        {<br>
+          std::cout &lt;&lt; "\n  could not open file " &lt;&lt; argv[i] &lt;&lt; std::endl;<br>
+          continue;<br>
+        }<br>
+      }<br>
+      else<br>
+      {<br>
+        std::cout &lt;&lt; "\n\n  Parser not built\n\n";<br>
+        return 1;<br>
+      }<br>
+      // now that parser is built, use it<br>
+<br>
+      while(pParser-&gt;next())<br>
+        pParser-&gt;parse();<br>
+      std::cout &lt;&lt; "\n\n";<br>
+    }<br>
+    catch(std::exception& ex)<br>
+    {<br>
+      std::cout &lt;&lt; "\n\n    " &lt;&lt; ex.what() &lt;&lt; "\n\n";<br>
+    }<br>
+    std::cout &lt;&lt; "\n\n";<br>
+  }<br>
+}</div><br>
+<br>
+#endif<br>
+<//pre><//body><//html>

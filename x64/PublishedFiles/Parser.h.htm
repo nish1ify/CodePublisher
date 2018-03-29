@@ -1,0 +1,135 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "Parser.h.htm">Parser.h - </a><br><a href = "itokcollection.h.htm">itokcollection.h - </a><br><br><br>#ifndef PARSER_H<br>
+#define PARSER_H<br>
+/////////////////////////////////////////////////////////////////////<br>
+//  Parser.h - Analyzes C++ and C# language constructs             //<br>
+//  ver 1.5                                                        //<br>
+//  Language:      Visual C++, Visual Studio 2015                  //<br>
+//  Platform:      Dell XPS 8900, Windows 10                       //<br>
+//  Application:   Prototype for CSE687 Pr1, Sp09, ...             //<br>
+//  Author:        Jim Fawcett, CST 4-187, Syracuse University     //<br>
+//                 (315) 443-3948, jfawcett@twcny.rr.com           //<br>
+/////////////////////////////////////////////////////////////////////<br>
+/*<br>
+  Module Operations: <br>
+  ==================<br>
+  This module defines a Parser class.  Its instances collect <br>
+  semi-expressions from a file for analysis.  Analysis consists of<br>
+  applying a set of rules to the semi-expression, and for each rule<br>
+  that matches, invokes a set of one or more actions.<br>
+<br>
+  Public Interface:<br>
+  =================<br>
+  Toker t(someFile);              // create tokenizer instance<br>
+  SemiExp se(&t);                 // create a SemiExp attached to tokenizer<br>
+  Parser parser(se);              // now we have a parser<br>
+  Rule1 r1;                       // create instance of a derived Rule class<br>
+  Action1 a1;                     // create a derived action<br>
+  r1.addAction(&a1);              // register action with the rule<br>
+  parser.addRule(&r1);            // register rule with parser<br>
+  while(se.getSemiExp())          // get semi-expression<br>
+    parser.parse();               //   and parse it<br>
+<br>
+  Build Process:<br>
+  ==============<br>
+  Required files<br>
+    - Parser.h, Parser.cpp, SemiExpression.h, SemiExpression.cpp,<br>
+      tokenizer.h, tokenizer.cpp,<br>
+      ActionsAndRules.h, ActionsAndRules.cpp,<br>
+      ConfigureParser.h, ConfigureParser.cpp<br>
+  Build commands (either one)<br>
+    - devenv Parser.sln<br>
+    - cl /EHsc /DTEST_PARSER parser.cpp semiexpression.cpp tokenizer.cpp \<br>
+         ActionsAndRules.cpp ConfigureParser.cpp /link setargv.obj<br>
+<br>
+  Maintenance History:<br>
+  ====================<br>
+  ver 1.5 : 19 Aug 16<br>
+  - added trimming of semis in Parser::next()<br>
+  - changed IRule interface to accept const pointer<br>
+  - Now stops processing rules for a SemiExp if a rule returns IRule::Stop.<br>
+    It continues by collecting another SemiExp for testing.<br>
+  ver 1.4 : 15 Feb 16<br>
+  - removed all folding rules code<br>
+  - changed solution folder layout which caused changes in many of the<br>
+    include paths<br>
+  - small modifications to one of the derived actions<br>
+  - now preface (new) Toker and SemiExp with Scanner namespace<br>
+  ver 1.3 : 02 Jun 11<br>
+  - added use of folding rules in get();<br>
+  ver 1.2 : 17 Jan 09<br>
+  - modified to accept pointer to interface ITokCollection instead of<br>
+    SemiExpression<br>
+  ver 1.1 : 17 Sep 07<br>
+  - cosmetic modifications to comments on this page<br>
+  ver 1.0 : 12 Jan 06<br>
+  - first release<br>
+<br>
+*/<br>
+<br>
+#include &lt;string&gt;<br>
+#include &lt;iostream&gt;<br>
+#include &lt;vector&gt;<br>
+#include "../SemiExp/itokcollection.h"<br>
+<br>
+namespace CodeAnalysis<br>
+{<br>
+  ///////////////////////////////////////////////////////////////<br>
+  // abstract base class for parsing actions<br>
+  //   - when a rule succeeds, it invokes any registered action<br>
+<br>
+  class Parser;<br>
+<br>
+  class IBuilder<br>
+  {<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+  public:<br>
+    virtual ~IBuilder() {}<br>
+    virtual Parser* Build() = 0;<br>
+  }</div>;<br>
+<br>
+  ///////////////////////////////////////////////////////////////<br>
+  // abstract base class for parsing actions<br>
+  //   - when a rule succeeds, it invokes any registered action<br>
+<br>
+  class IAction<br>
+  {<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+  public:<br>
+    virtual ~IAction() {}<br>
+    virtual void doAction(const Scanner::ITokCollection* pTc) = 0;<br>
+  }</div>;<br>
+<br>
+  ///////////////////////////////////////////////////////////////<br>
+  // abstract base class for parser language construct detections<br>
+  //   - rules are registered with the parser for use<br>
+<br>
+  class IRule<br>
+  {<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+  public:<br>
+    static const bool Continue = true;<br>
+    static const bool Stop = false;<br>
+    virtual ~IRule() {}<br>
+    void addAction(IAction* pAction);<br>
+    void doActions(const Scanner::ITokCollection* pTc);<br>
+    virtual bool doTest(const Scanner::ITokCollection* pTc) = 0;<br>
+  protected:<br>
+    std::vector&lt;IAction*&gt; actions;<br>
+  }</div>;<br>
+<br>
+  class Parser<br>
+  {<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+  public:<br>
+    Parser(Scanner::ITokCollection* pTokCollection);<br>
+    ~Parser();<br>
+    void addRule(IRule* pRule);<br>
+    bool parse();<br>
+    bool next();<br>
+  private:<br>
+    Scanner::ITokCollection* pTokColl;<br>
+    std::vector&lt;IRule*&gt; rules;<br>
+  }</div>;<br>
+<br>
+  inline Parser::Parser(Scanner::ITokCollection* pTokCollection) : pTokColl(pTokCollection) {}<br>
+<br>
+  inline Parser::~Parser() {}<br>
+}<br>
+#endif<br>
+<//pre><//body><//html>

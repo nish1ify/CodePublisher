@@ -1,0 +1,155 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "FileSystem.h.htm">FileSystem.h - </a><br><a href = "NoSqlDataBaseApp.h.htm">NoSqlDataBaseApp.h - </a><br><a href = "Persistance.h.htm">Persistance.h - </a><br><a href = "Test1.cpp.htm">Test1.cpp - </a><br><a href = "Test2.cpp.htm">Test2.cpp - </a><br><a href = "XmlDocument.h.htm">XmlDocument.h - </a><br><a href = "XmlElement.cpp.htm">XmlElement.cpp - </a><br><a href = "XmlElement.h.htm">XmlElement.h - </a><br><br><br>/////////////////////////////////////////////////////////////////////<br>
+//  Persistance.h -  Functions supporting XMl Parsing              //<br>
+//  ver 1.0                                                        //<br>
+//                                                                 //<br>
+//  Language:      Visual C++ 2008, SP1                            //<br>
+//  Platform:      Dell Inspiron, Windows 8.1			           //<br>
+//  Application:   NoSql Database - CIS 687 Project 3             //<br>
+//  Author:        Nishanth Chandrasekaran SUID:215242434		   //<br>
+/////////////////////////////////////////////////////////////////////<br>
+/*<br>
+Module Operations:<br>
+==================<br>
+This module defines a Persistance class<br>
+* - The functions defined in this class are used for,<br>
+&gt; Returning the DataBase object after populating it from the XML Document<br>
+Public Interface:<br>
+=================<br>
+toXml<br>
+fromXml<br>
+Build Process:<br>
+==============<br>
+Required files<br>
+-CppProperties<br>
+- convert.h<br>
+-NoSQLDataBase<br>
+Maintenance History:<br>
+====================<br>
+ver 2.0 : 6 April 2017<br>
+- first release<br>
+*/<br>
+<br>
+#pragma once<br>
+#include "../XmlDocument/XmlDocument/XmlDocument.h"<br>
+#include "../XmlDocument/XmlElement/XmlElement.h"<br>
+#include "../CppProperties/CppProperties.h"<br>
+#include "../Convert/Convert.h"<br>
+#include "../StrHelper.h"<br>
+#include "../NoSQLDataBase/NoSQLDataBase.h"<br>
+#include "../Dependency/Dependency.h"<br>
+#include&lt;fstream&gt;<br>
+<br>
+<br>
+<br>
+<br>
+using Key = std::string;<br>
+using Keys = std::vector&lt;std::string&gt;;<br>
+<br>
+using namespace XmlProcessing;<br>
+using SPtr = std::shared_ptr&lt;AbstractXmlElement&gt;;<br>
+using Path = std::string;<br>
+using File = std::string;<br>
+using Files = std::vector&lt;File&gt;;<br>
+using Pattern = std::string;<br>
+using Ext = std::string;<br>
+using FileMap = std::unordered_map&lt;Pattern, Files&gt;;<br>
+<br>
+<br>
+<br>
+<br>
+//Returns a xml string and used to persist values in the XML Document for dependency<br>
+std::string toXml(Dependency db)<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+    std::string xml;<br>
+	XmlDocument doc;<br>
+    Keys allkeys = db.keys();<br>
+    SPtr pRoot = makeTaggedElement("DBX");<br>
+	doc.docElement() = pRoot;<br>
+    for (Key keyss : allkeys)<br>
+	{<br>
+       SPtr pNameElem = makeTaggedElement("Record");<br>
+	   pRoot-&gt;addChild(pNameElem);<br>
+       SPtr elekey = makeTaggedElement("Key");<br>
+	   pNameElem-&gt;addChild(elekey);<br>
+	   SPtr tenamekey = makeTextElement(keyss);<br>
+	   elekey-&gt;addChild(tenamekey);<br>
+	  SPtr ele15 = makeTaggedElement("Children-Keys");<br>
+	  pNameElem-&gt;addChild(ele15);<br>
+      for (ElementItem k : db.value(keyss))<br>
+	 {<br>
+		  for (std::string s : k.childrenList)<br>
+		  {<br>
+			  SPtr techild = makeTaggedElement("Child");<br>
+			  ele15-&gt;addChild(techild);<br>
+			  SPtr childvalue = makeTextElement(s);<br>
+			  techild-&gt;addChild(childvalue);<br>
+<br>
+		  }<br>
+		<br>
+     }<br>
+<br>
+	 }<br>
+	xml = doc.toString();<br>
+	try<br>
+	{<br>
+	std::ofstream sample("../nishu.xml");<br>
+	sample &lt;&lt; xml;<br>
+	sample.close();<br>
+	}<br>
+	catch (const std::exception& e)<br>
+	{<br>
+	std::cout &lt;&lt; e.what();<br>
+	}<br>
+    return xml;<br>
+}</div><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+//Returns a xml string and used to persist values in the XML Document for SCC<br>
+std::string toXmlscc(std::vector&lt;std::vector&lt;int&gt;&gt;& db, std::unordered_map&lt;int, File&gt;& rev)<br>
+{<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+	std::string xml;<br>
+	XmlDocument doc;<br>
+	SPtr pRoot = makeTaggedElement("DBX");<br>
+	doc.docElement() = pRoot;	<br>
+	for (std::vector&lt;int&gt; r : db)<br>
+	{<br>
+		<br>
+		SPtr ele15 = makeTaggedElement("SCC_Component");<br>
+		pRoot-&gt;addChild(ele15);<br>
+		for  (int a : r)<br>
+		{<br>
+			<br>
+				SPtr techild = makeTaggedElement("Child");<br>
+				ele15-&gt;addChild(techild);<br>
+				SPtr childvalue = makeTextElement(rev[a]);<br>
+				techild-&gt;addChild(childvalue);<br>
+<br>
+			}<br>
+<br>
+		<br>
+<br>
+	}<br>
+	xml = doc.toString();<br>
+	try<br>
+	{<br>
+		std::ofstream sample("../nishuu.xml");<br>
+		sample &lt;&lt; xml;<br>
+		sample.close();<br>
+	}<br>
+	catch (const std::exception& e)<br>
+	{<br>
+		std::cout &lt;&lt; e.what();<br>
+	}<br>
+	return xml;<br>
+}</div><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<//pre><//body><//html>

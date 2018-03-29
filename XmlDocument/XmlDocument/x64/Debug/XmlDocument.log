@@ -1,0 +1,10 @@
+﻿  XmlParser.cpp
+c:\users\nish1ify\desktop\all_ood\ood project 3\ood project 3\codeanalyzerex\xmldocument\xmlparser\xmlparser.cpp(127): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\nish1ify\desktop\all_ood\ood project 3\ood project 3\codeanalyzerex\xmldocument\xmlparser\xmlparser.cpp(129): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\nish1ify\desktop\all_ood\ood project 3\ood project 3\codeanalyzerex\xmldocument\xmlparser\xmlparser.cpp(193): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  XmlElement.cpp
+  xmlElementParts.cpp
+  Tokenizer.cpp
+  Generating Code...
+  XmlDocument.cpp
+  XmlDocument.vcxproj -> C:\Users\nish1ify\Desktop\All_OOD\OOD Project 3\OOD Project 3\CodeAnalyzerEx\x64\Debug\XmlDocument.lib

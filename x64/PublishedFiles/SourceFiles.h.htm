@@ -1,0 +1,890 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "AbstrSynTree.h.htm">AbstrSynTree.h - </a><br><a href = "ActionsAndRules.h.htm">ActionsAndRules.h - </a><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "Executive.h.htm">Executive.h - </a><br><a href = "FileMgr.h.htm">FileMgr.h - </a><br><a href = "FileSystem.cpp.htm">FileSystem.cpp - </a><br><a href = "FileSystem.h.htm">FileSystem.h - </a><br><a href = "GrammarHelpers.cpp.htm">GrammarHelpers.cpp - </a><br><a href = "Logger.h.htm">Logger.h - </a><br><a href = "OtherSource.h.htm">OtherSource.h - </a><br><a href = "ScopeStack.cpp.htm">ScopeStack.cpp - </a><br><a href = "Tokenizer.h.htm">Tokenizer.h - </a><br><a href = "itokcollection.h.htm">itokcollection.h - </a><br><br><br><br>
+<br>
+<br>
+#pragma once<br>
+#pragma warning( disable : 4503)<br>
+<br>
+/////////////////////////////////////////////////////////////////////<br>
+// Executive.cpp - Directs Code Analysis                           //<br>
+// ver 1.4                                                         //<br>
+//-----------------------------------------------------------------//<br>
+// Jim Fawcett (c) copyright 2016                                  //<br>
+// All rights granted provided this copyright notice is retained   //<br>
+//-----------------------------------------------------------------//<br>
+// Language:    C++, Visual Studio 2015                            //<br>
+// Platform:    Dell XPS 8900, Windows 10                          //<br>
+// Application: Project #2, CSE687 - Object Oriented Design, S2015 //<br>
+// Author:      Jim Fawcett, Syracuse University, CST 4-187        //<br>
+//              jfawcett@twcny.rr.com                              //<br>
+/////////////////////////////////////////////////////////////////////<br>
+<br>
+<br>
+#include "../Analyzer/Executive.h"<br>
+#include &lt;sstream&gt;<br>
+#include &lt;string&gt;<br>
+#include &lt;vector&gt;<br>
+#include &lt;map&gt;<br>
+#include &lt;unordered_map&gt;<br>
+#include &lt;functional&gt;<br>
+#include &lt;algorithm&gt;<br>
+#include &lt;exception&gt;<br>
+#include &lt;iomanip&gt;<br>
+#include &lt;chrono&gt;<br>
+#include &lt;ctime&gt;<br>
+<br>
+#include "../Parser/Parser.h"<br>
+#include "../FileSystem/FileSystem.h"<br>
+#include "../FileMgr/FileMgr.h"<br>
+#include "../Parser/ActionsAndRules.h"<br>
+#include "../Parser/ConfigureParser.h"<br>
+#include "../AbstractSyntaxTree/AbstrSynTree.h"<br>
+#include "../Logger/Logger.h"<br>
+#include "../Utilities/Utilities.h"<br>
+#include "../Analyzer/DepAnal.h"<br>
+#include "../TypeTable/TypeTable.h"<br>
+#include "../Dependency/Dependency.h"<br>
+#include "../StrongComponent/StrongComponent.h"<br>
+#include "../StrongComponent/StrongComponent.h"<br>
+#include "../Persistance/Persistance.h"<br>
+//#include "../XmlDocument/XmlDocument/XmlDocument.h"<br>
+//#include "../XmlDocument/XmlElement/XmlElement.h"<br>
+<br>
+//#include "../NoSQLDataBase/NoSQLDataBase.h"<br>
+<br>
+<br>
+<br>
+using Key = std::string;<br>
+using Keys = std::vector&lt;Key&gt;;<br>
+<br>
+using Rslt = Logging::StaticLogger&lt;0&gt;;  // use for application results<br>
+using Demo = Logging::StaticLogger&lt;1&gt;;  // use for demonstrations of processing<br>
+using Dbug = Logging::StaticLogger&lt;2&gt;;  // use for debug output<br>
+<br>
+<br>
+										/////////////////////////////////////////////////////////////////////<br>
+										// AnalFileMgr class<br>
+										// - Derives from FileMgr to make application specific file handler<br>
+										//   by overriding FileMgr::file(), FileMgr::dir(), and FileMgr::done()<br>
+<br>
+using Path = std::string;<br>
+using File = std::string;<br>
+using Files = std::vector&lt;File&gt;;<br>
+using Pattern = std::string;<br>
+using Ext = std::string;<br>
+using FileMap = std::unordered_map&lt;Pattern, Files&gt;;<br>
+<br>
+using namespace CodeAnalysis;<br>
+<br>
+//----&lt; initialize application specific FileMgr &gt;--------------------<br>
+/*<br>
+* - Accepts CodeAnalysisExecutive's path and fileMap by reference<br>
+*/<br>
+AnalFileMgr::AnalFileMgr(const Path& path, FileMap& fileMap)<br>
+	: FileMgr(path), fileMap_(fileMap), numFiles_(0), numDirs_(0) {}<br>
+<br>
+//----&lt; override of FileMgr::file(...) to store found files &gt;------<br>
+<br>
+void AnalFileMgr::file(const File& f)<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+	File fqf = d_ + "\\" + f;<br>
+	Ext ext = FileSystem::Path::getExt(fqf);<br>
+	Pattern p = "*." + ext;<br>
+	fileMap_[p].push_back(fqf);<br>
+	++numFiles_;<br>
+}</div><br>
+//----&lt; override of FileMgr::dir(...) to save current dir &gt;----------<br>
+<br>
+void AnalFileMgr::dir(const Dir& d)<br>
+{<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+	d_ = d;<br>
+	++numDirs_;<br>
+}</div><br>
+//----&lt; override of FileMgr::done(), not currently used &gt;------------<br>
+<br>
+void AnalFileMgr::done()<br>
+{<br>
+}<br>
+//----&lt; returns number of matched files from search &gt;----------------<br>
+<br>
+size_t AnalFileMgr::numFiles()<br>
+{<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+	return numFiles_;<br>
+}</div><br>
+//----&lt; returns number of dirs searched &gt;----------------------------<br>
+<br>
+size_t AnalFileMgr::numDirs()<br>
+{<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+	return numDirs_;<br>
+}</div><br>
+<br>
+/////////////////////////////////////////////////////////////////////<br>
+// CodeAnalysisExecutive class<br>
+// - <br>
+using Path = std::string;<br>
+using Pattern = std::string;<br>
+using Patterns = std::vector&lt;Pattern&gt;;<br>
+using File = std::string;<br>
+using Files = std::vector&lt;File&gt;;<br>
+using Ext = std::string;<br>
+using FileMap = std::unordered_map&lt;Pattern, Files&gt;;<br>
+using ASTNodes = std::vector&lt;ASTNode*&gt;;<br>
+using FileToNodeCollection = std::vector&lt;std::pair&lt;File, ASTNode*&gt;&gt;;<br>
+<br>
+//----&lt; initialize parser, get access to repository &gt;----------------<br>
+<br>
+CodeAnalysisExecutive::CodeAnalysisExecutive()<br>
+{<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+	pParser_ = configure_.Build();<br>
+	if (pParser_ == nullptr)<br>
+	{<br>
+		throw std::exception("couldn't create parser");<br>
+	}<br>
+	pRepo_ = Repository::getInstance();<br>
+}</div><br>
+//----&lt; cleanup &gt;----------------------------------------------------<br>
+<br>
+CodeAnalysisExecutive::~CodeAnalysisExecutive()<br>
+{<button id ="994"onclick="myFunction6();toggleText6(this.id); ">-</button><div id = "myDIV6"><br>
+	/*<br>
+	*  Nothing to do:<br>
+	*  - pParser_ and pRepo_ point to objects that the configure_<br>
+	*    destructor will delete.<br>
+	*  - The AbstractSynTree object will cleanup its contents when<br>
+	*    it goes out of scope by deleting the root of the AST node<br>
+	*    tree.<br>
+	*  - Each node deletes its children, so, again, nothing more<br>
+	*    to do.<br>
+	*  - This is here to present these comments and to make this<br>
+	*    base destructor virtual.<br>
+	*/<br>
+}</div><br>
+//----&lt; usage message &gt;----------------------------------------------<br>
+<br>
+void showUsage()<br>
+{<button id ="993"onclick="myFunction7();toggleText7(this.id); ">-</button><div id = "myDIV7"><br>
+	std::ostringstream out;<br>
+	out &lt;&lt; "\n  Usage:";<br>
+	out &lt;&lt; "\n  Command Line Arguments are:";<br>
+	out &lt;&lt; "\n  - 1st: path to subdirectory containing files to analyze";<br>
+	out &lt;&lt; "\n  - remaining non-option arguments are file patterns, e.g., *.h and/or *.cpp, etc.";<br>
+	out &lt;&lt; "\n  - must have at least one file pattern to specify what to process";<br>
+	out &lt;&lt; "\n  - option arguments have the format \"\"/x\" , where x is one of the options:";<br>
+	out &lt;&lt; "\n    - m : display function metrics";<br>
+	out &lt;&lt; "\n    - s : display file sizes";<br>
+	out &lt;&lt; "\n    - a : display Abstract Syntax Tree";<br>
+	out &lt;&lt; "\n    - r : set logger to display results";<br>
+	out &lt;&lt; "\n    - d : set logger to display demo outputs";<br>
+	out &lt;&lt; "\n    - b : set logger to display debug outputs";<br>
+	out &lt;&lt; "\n    - f : write all logs to logfile.txt";<br>
+	out &lt;&lt; "\n  A metrics summary is always shown, independent of any options used or not used";<br>
+	out &lt;&lt; "\n\n";<br>
+	std::cout &lt;&lt; out.str();<br>
+	//Rslt::write(out.str());<br>
+	//Rslt::flush();<br>
+}</div><br>
+//----&lt; show command line arguments &gt;--------------------------------<br>
+<br>
+void CodeAnalysisExecutive::showCommandLineArguments(int argc, char* argv[])<br>
+{<button id ="992"onclick="myFunction8();toggleText8(this.id); ">-</button><div id = "myDIV8"><br>
+	std::ostringstream out;<br>
+	out &lt;&lt; "\n     Path: \"" &lt;&lt; FileSystem::Path::getFullFileSpec(argv[1]) &lt;&lt; "\"\n     Args: ";<br>
+	for (int i = 2; i &lt; argc - 1; ++i)<br>
+		out &lt;&lt; argv[i] &lt;&lt; ", ";<br>
+	out &lt;&lt; argv[argc - 1];<br>
+	Rslt::write(out.str());<br>
+	Rslt::flush();<br>
+}</div><br>
+//----&lt; handle command line arguments &gt;------------------------------<br>
+/*<br>
+* Arguments are:<br>
+* - path: possibly relative path to folder containing all analyzed code,<br>
+*   e.g., may be anywhere in the directory tree rooted at that path<br>
+* - patterns: one or more file patterns of the form *.h, *.cpp, and *.cs<br>
+* - options: /m (show metrics), /s (show file sizes), and /a (show AST)<br>
+*/<br>
+bool CodeAnalysisExecutive::ProcessCommandLine(int argc, char* argv[])<br>
+{<button id ="991"onclick="myFunction9();toggleText9(this.id); ">-</button><div id = "myDIV9"><br>
+	if (argc &lt; 2)<br>
+	{<br>
+		showUsage();<br>
+		return false;<br>
+	}<br>
+	try {<br>
+		path_ = FileSystem::Path::getFullFileSpec(argv[1]);<br>
+		if (!FileSystem::Directory::exists(path_))<br>
+		{<br>
+			std::cout &lt;&lt; "\n\n  path \"" &lt;&lt; path_ &lt;&lt; "\" does not exist\n\n";<br>
+			return false;<br>
+		}<br>
+		for (int i = 2; i &lt; argc; ++i)<br>
+		{<br>
+			if (argv[i][0] == '/')<br>
+				options_.push_back(argv[i][1]);<br>
+			else<br>
+				patterns_.push_back(argv[i]);<br>
+		}<br>
+		if (patterns_.size() == 0)<br>
+		{<br>
+			showUsage();<br>
+			return false;<br>
+		}<br>
+	}<br>
+	catch (std::exception& ex)<br>
+	{<br>
+		std::cout &lt;&lt; "\n\n  command line argument parsing error:";<br>
+		std::cout &lt;&lt; "\n  " &lt;&lt; ex.what() &lt;&lt; "\n\n";<br>
+		return false;<br>
+	}<br>
+	return true;<br>
+}</div><br>
+//----&lt; returns path entered on command line &gt;-------------------<br>
+<br>
+std::string CodeAnalysisExecutive::getAnalysisPath()<br>
+{<button id ="990"onclick="myFunction10();toggleText10(this.id); ">-</button><div id = "myDIV10"><br>
+	return path_;<br>
+}</div><br>
+//----&lt; returns reference to FileMap &gt;---------------------------<br>
+/*<br>
+* Supports quickly finding all the files found with a give pattern<br>
+*/<br>
+FileMap& CodeAnalysisExecutive::getFileMap()<br>
+{<button id ="989"onclick="myFunction11();toggleText11(this.id); ">-</button><div id = "myDIV11"><br>
+	return fileMap_;<br>
+}</div><br>
+//----&lt; searches path for files matching specified patterns &gt;----<br>
+/*<br>
+* - Searches entire diretory tree rooted at path_, evaluated<br>
+*   from a command line argument.<br>
+* - Saves found files in FileMap.<br>
+*/<br>
+void CodeAnalysisExecutive::getSourceFiles()<br>
+{<button id ="988"onclick="myFunction12();toggleText12(this.id); ">-</button><div id = "myDIV12"><br>
+	AnalFileMgr fm(path_, fileMap_);<br>
+	for (auto patt : patterns_)<br>
+		fm.addPattern(patt);<br>
+	fm.search();<br>
+	numFiles_ = fm.numFiles();<br>
+	numDirs_ = fm.numDirs();<br>
+}</div><br>
+//----&lt; helper: is text a substring of str? &gt;--------------------<br>
+<br>
+bool contains(const std::string& str, const std::string& text)<br>
+{<button id ="987"onclick="myFunction13();toggleText13(this.id); ">-</button><div id = "myDIV13"><br>
+	if (str.find(text) &lt; str.length())<br>
+		return true;<br>
+	return false;<br>
+}</div><br>
+//----&lt; retrieve from fileMap all files matching *.h &gt;-----------<br>
+<br>
+std::vector&lt;File&gt;& CodeAnalysisExecutive::cppHeaderFiles()<br>
+{<button id ="986"onclick="myFunction14();toggleText14(this.id); ">-</button><div id = "myDIV14"><br>
+	cppHeaderFiles_.clear();<br>
+	for (auto item : fileMap_)<br>
+	{<br>
+		if (contains(item.first, "*.h"))<br>
+		{<br>
+			for (auto file : item.second)<br>
+				cppHeaderFiles_.push_back(file);<br>
+		}<br>
+	}<br>
+	return cppHeaderFiles_;<br>
+}</div><br>
+//----&lt; retrieve from fileMap all files matching *.cpp &gt;---------<br>
+<br>
+std::vector&lt;File&gt;& CodeAnalysisExecutive::cppImplemFiles()<br>
+{<button id ="985"onclick="myFunction15();toggleText15(this.id); ">-</button><div id = "myDIV15"><br>
+	cppImplemFiles_.clear();<br>
+	for (auto item : fileMap_)<br>
+	{<br>
+		if (contains(item.first, "*.cpp"))<br>
+		{<br>
+			for (auto file : item.second)<br>
+				cppImplemFiles_.push_back(file);<br>
+		}<br>
+	}<br>
+	return cppImplemFiles_;<br>
+}</div><br>
+//----&lt; retrieve from fileMap all files matching *.cs &gt;----------<br>
+<br>
+std::vector&lt;File&gt;& CodeAnalysisExecutive::csharpFiles()<br>
+{<button id ="984"onclick="myFunction16();toggleText16(this.id); ">-</button><div id = "myDIV16"><br>
+	csharpFiles_.clear();<br>
+	for (auto item : fileMap_)<br>
+	{<br>
+		if (contains(item.first, "*.cs"))<br>
+		{<br>
+			for (auto file : item.second)<br>
+				csharpFiles_.push_back(file);<br>
+		}<br>
+	}<br>
+	return csharpFiles_;<br>
+}</div><br>
+//----&lt; report number of Source Lines Of Code (SLOCs) &gt;----------<br>
+<br>
+CodeAnalysisExecutive::Slocs CodeAnalysisExecutive::fileSLOCs(const File& file)<br>
+{<button id ="983"onclick="myFunction17();toggleText17(this.id); ">-</button><div id = "myDIV17"><br>
+	return slocMap_[file];<br>
+}</div><br>
+//----&lt; report number of files processed &gt;-----------------------<br>
+<br>
+size_t CodeAnalysisExecutive::numFiles()<br>
+{<button id ="982"onclick="myFunction18();toggleText18(this.id); ">-</button><div id = "myDIV18"><br>
+	return numFiles_;<br>
+}</div><br>
+//----&lt; report number of directories searched &gt;------------------<br>
+<br>
+size_t CodeAnalysisExecutive::numDirs()<br>
+{<button id ="981"onclick="myFunction19();toggleText19(this.id); ">-</button><div id = "myDIV19"><br>
+	return numDirs_;<br>
+}</div><br>
+//----&lt; show processing activity &gt;-------------------------------<br>
+<br>
+void CodeAnalysisExecutive::showActivity(const File& file)<br>
+{<button id ="980"onclick="myFunction20();toggleText20(this.id); ">-</button><div id = "myDIV20"><br>
+	std::function&lt;std::string(std::string, size_t)&gt; trunc = [](std::string in, size_t count)<br>
+	{<br>
+		return in.substr(0, count);<br>
+	};<br>
+<br>
+	if (Rslt::running())<br>
+	{<br>
+		std::cout &lt;&lt; std::left &lt;&lt; "\r     Processing file: " &lt;&lt; std::setw(80) &lt;&lt; trunc(file, 80);<br>
+	}<br>
+}</div><br>
+<br>
+void CodeAnalysisExecutive::clearActivity()<br>
+{<button id ="979"onclick="myFunction21();toggleText21(this.id); ">-</button><div id = "myDIV21"><br>
+	if (Rslt::running())<br>
+	{<br>
+		std::cout &lt;&lt; std::left &lt;&lt; "\r                      " &lt;&lt; std::setw(80) &lt;&lt; std::string(80, ' ');<br>
+	}<br>
+}</div><br>
+//----&lt; parses code and saves results in AbstrSynTree &gt;--------------<br>
+/*<br>
+* - Processes C++ header files first to build AST with nodes for<br>
+*   all public classes and structs.<br>
+* - Then processes C++ implementation files.  Each member function<br>
+*   is relocated to its class scope node, not the local scope.<br>
+* - Therefore, this ordering is important.<br>
+* - C# code has all member functions inline, so we don't need to<br>
+*   do any relocation of nodes in the AST.  Therefore, that analysis<br>
+*   can be done at any time.<br>
+* - If you bore down into the analysis code in ActionsAndRules.h you<br>
+*   will find some gymnastics to handle template syntax.  That can<br>
+*   get somewhat complicated, so there may be some latent bugs there.<br>
+*   I don't know of any at this time.<br>
+*/<br>
+void CodeAnalysisExecutive::setLanguage(const File& file)<br>
+{<button id ="978"onclick="myFunction22();toggleText22(this.id); ">-</button><div id = "myDIV22"><br>
+	std::string ext = FileSystem::Path::getExt(file);<br>
+	if (ext == "h" || ext == "cpp")<br>
+		pRepo_-&gt;language() = Language::Cpp;<br>
+	else if (ext == "cs")<br>
+		pRepo_-&gt;language() = Language::CSharp;<br>
+}</div><br>
+<br>
+<br>
+<br>
+void CodeAnalysisExecutive::processSourceCode(bool showProc)<br>
+{<button id ="977"onclick="myFunction23();toggleText23(this.id); ">-</button><div id = "myDIV23"><br>
+	for (auto file : cppHeaderFiles())<br>
+	{<br>
+		if (showProc)<br>
+			showActivity(file);<br>
+		pRepo_-&gt;package() = FileSystem::Path::getName(file);<br>
+<br>
+		if (!configure_.Attach(file))<br>
+		{<br>
+			std::ostringstream out;<br>
+			out &lt;&lt; "\n  could not open file " &lt;&lt; file &lt;&lt; "\n";<br>
+			Rslt::write(out.str());<br>
+			Rslt::flush();<br>
+			continue;<br>
+		}<br>
+		// parse file<br>
+		Rslt::flush();<br>
+		Demo::flush();<br>
+		Dbug::flush();<br>
+<br>
+		if (!Rslt::running())<br>
+			Demo::write("\n\n  opening file \"" + pRepo_-&gt;package() + "\"");<br>
+		if (!Demo::running() && !Rslt::running())<br>
+			Dbug::write("\n\n  opening file \"" + pRepo_-&gt;package() + "\"");<br>
+		pRepo_-&gt;language() = Language::Cpp;<br>
+		pRepo_-&gt;currentPath() = file;<br>
+		while (pParser_-&gt;next())<br>
+		{<br>
+			pParser_-&gt;parse();<br>
+		}<br>
+<br>
+		Slocs slocs = pRepo_-&gt;Toker()-&gt;currentLineCount();<br>
+		slocMap_[pRepo_-&gt;package()] = slocs;<br>
+	}<br>
+	for (auto file : cppImplemFiles())<br>
+	{<br>
+		if (showProc)<br>
+			showActivity(file);<br>
+		pRepo_-&gt;package() = FileSystem::Path::getName(file);<br>
+<br>
+		if (!configure_.Attach(file))<br>
+		{<br>
+			std::ostringstream out;<br>
+			out &lt;&lt; "\n  could not open file " &lt;&lt; file &lt;&lt; "\n";<br>
+			Rslt::write(out.str());<br>
+			Rslt::flush();<br>
+			continue;<br>
+		}<br>
+		// parse file<br>
+<br>
+		if (!Rslt::running())<br>
+			Demo::write("\n\n  opening file \"" + pRepo_-&gt;package() + "\"");<br>
+		if (!Demo::running() && !Rslt::running())<br>
+			Dbug::write("\n\n  opening file \"" + pRepo_-&gt;package() + "\"");<br>
+		pRepo_-&gt;language() = Language::Cpp;<br>
+		pRepo_-&gt;currentPath() = file;<br>
+		while (pParser_-&gt;next())<br>
+			pParser_-&gt;parse();<br>
+<br>
+		Slocs slocs = pRepo_-&gt;Toker()-&gt;currentLineCount();<br>
+		slocMap_[pRepo_-&gt;package()] = slocs;<br>
+	}<br>
+	for (auto file : csharpFiles())<br>
+	{<br>
+		if (showProc)<br>
+			showActivity(file);<br>
+		pRepo_-&gt;package() = FileSystem::Path::getName(file);<br>
+<br>
+		if (!configure_.Attach(file))<br>
+		{<br>
+			std::ostringstream out;<br>
+			out &lt;&lt; "\n  could not open file " &lt;&lt; file &lt;&lt; "\n";<br>
+			Rslt::write(out.str());<br>
+			continue;<br>
+		}<br>
+		// parse file<br>
+<br>
+		if (!Rslt::running())<br>
+			Demo::write("\n\n  opening file \"" + pRepo_-&gt;package() + "\"");<br>
+		if (!Demo::running() && !Rslt::running())<br>
+			Dbug::write("\n\n  opening file \"" + pRepo_-&gt;package() + "\"");<br>
+		pRepo_-&gt;language() = Language::CSharp;<br>
+		pRepo_-&gt;currentPath() = file;<br>
+		while (pParser_-&gt;next())<br>
+			pParser_-&gt;parse();<br>
+<br>
+		Slocs slocs = pRepo_-&gt;Toker()-&gt;currentLineCount();<br>
+		slocMap_[pRepo_-&gt;package()] = slocs;<br>
+	}<br>
+	if (showProc)<br>
+		clearActivity();<br>
+	std::ostringstream out;<br>
+	out &lt;&lt; std::left &lt;&lt; "\r  " &lt;&lt; std::setw(77) &lt;&lt; " ";<br>
+	Rslt::write(out.str());<br>
+}</div><br>
+<br>
+<br>
+//----&lt; evaluate complexities of each AST node &gt;---------------------<br>
+<br>
+void CodeAnalysisExecutive::complexityAnalysis()<br>
+{<button id ="976"onclick="myFunction24();toggleText24(this.id); ">-</button><div id = "myDIV24"><br>
+	ASTNode* pGlobalScope = pRepo_-&gt;getGlobalScope();<br>
+	CodeAnalysis::complexityEval(pGlobalScope);<br>
+}</div><br>
+//----&lt; comparison functor for sorting FileToNodeCollection &gt;----<br>
+/*<br>
+* - supports stable sort on extension values<br>
+* - displayMetrics(...) uses to organize metrics display<br>
+*/<br>
+struct CompExts<br>
+{<br>
+	bool operator()(const std::pair&lt;File, ASTNode*&gt;& first, const std::pair&lt;File, ASTNode*&gt;& second)<br>
+	{<button id ="975"onclick="myFunction25();toggleText25(this.id); ">-</button><div id = "myDIV25"><br>
+		return FileSystem::Path::getExt(first.first) &gt; FileSystem::Path::getExt(second.first);<br>
+	}</div><br>
+};<br>
+//----&lt; comparison functor for sorting FileToNodeCollection &gt;----<br>
+/*<br>
+* - supports stable sort on name values<br>
+* - displayMetrics(...) uses these functions to organize metrics display<br>
+*/<br>
+static void removeExt(std::string& name)<br>
+{<button id ="974"onclick="myFunction26();toggleText26(this.id); ">-</button><div id = "myDIV26"><br>
+	size_t extStartIndex = name.find_last_of('.');<br>
+	name = name.substr(0, extStartIndex);<br>
+}</div><br>
+<br>
+struct CompNames<br>
+{<br>
+	bool operator()(const std::pair&lt;File, ASTNode*&gt;& first, const std::pair&lt;File, ASTNode*&gt;& second)<br>
+	{<button id ="973"onclick="myFunction27();toggleText27(this.id); ">-</button><div id = "myDIV27"><br>
+		std::string fnm = FileSystem::Path::getName(first.first);<br>
+		removeExt(fnm);<br>
+		std::string snm = FileSystem::Path::getName(second.first);<br>
+		removeExt(snm);<br>
+		return fnm &lt; snm;<br>
+	}</div><br>
+};<br>
+//----&lt; display header line for displayMmetrics() &gt;------------------<br>
+<br>
+void CodeAnalysisExecutive::displayHeader()<br>
+{<button id ="972"onclick="myFunction28();toggleText28(this.id); ">-</button><div id = "myDIV28"><br>
+	std::ostringstream out;<br>
+	out &lt;&lt; std::right;<br>
+	out &lt;&lt; "\n ";<br>
+	out &lt;&lt; std::setw(25) &lt;&lt; "file name";<br>
+	out &lt;&lt; std::setw(12) &lt;&lt; "type";<br>
+	out &lt;&lt; std::setw(35) &lt;&lt; "name";<br>
+	out &lt;&lt; std::setw(8) &lt;&lt; "line";<br>
+	out &lt;&lt; std::setw(8) &lt;&lt; "size";<br>
+	out &lt;&lt; std::setw(8) &lt;&lt; "cplx";<br>
+	out &lt;&lt; std::right;<br>
+	out &lt;&lt; "\n  ";<br>
+	out &lt;&lt; std::setw(25) &lt;&lt; "-----------------------";<br>
+	out &lt;&lt; std::setw(12) &lt;&lt; "----------";<br>
+	out &lt;&lt; std::setw(35) &lt;&lt; "---------------------------------";<br>
+	out &lt;&lt; std::setw(8) &lt;&lt; "------";<br>
+	out &lt;&lt; std::setw(8) &lt;&lt; "------";<br>
+	out &lt;&lt; std::setw(8) &lt;&lt; "------";<br>
+	Rslt::write(out.str());<br>
+}</div><br>
+//----&lt; display single line for displayMetrics() &gt;-------------------<br>
+<br>
+void CodeAnalysisExecutive::displayMetricsLine(const File& file, ASTNode* pNode)<br>
+{<button id ="971"onclick="myFunction29();toggleText29(this.id); ">-</button><div id = "myDIV29"><br>
+	std::function&lt;std::string(std::string, size_t)&gt; trunc = [](std::string in, size_t count)<br>
+	{<br>
+		return in.substr(0, count);<br>
+	};<br>
+	std::ostringstream out;<br>
+	out &lt;&lt; std::right;<br>
+	out &lt;&lt; "\n ";<br>
+	out &lt;&lt; std::setw(25) &lt;&lt; trunc(file, 23);<br>
+	out &lt;&lt; std::setw(12) &lt;&lt; pNode-&gt;type_;<br>
+	out &lt;&lt; std::setw(35) &lt;&lt; trunc(pNode-&gt;name_, 33);<br>
+	out &lt;&lt; std::setw(8) &lt;&lt; pNode-&gt;startLineCount_;<br>
+	out &lt;&lt; std::setw(8) &lt;&lt; pNode-&gt;endLineCount_ - pNode-&gt;startLineCount_ + 1;<br>
+	size_t debug1 = pNode-&gt;startLineCount_;<br>
+	size_t debug2 = pNode-&gt;endLineCount_;<br>
+	out &lt;&lt; std::setw(8) &lt;&lt; pNode-&gt;complexity_;<br>
+	Rslt::write(out.str());<br>
+}</div><br>
+//----&lt; display lines containing public data declaration &gt;-----------<br>
+<br>
+std::string CodeAnalysisExecutive::showData(const Scanner::ITokCollection* pTc)<br>
+{<button id ="970"onclick="myFunction30();toggleText30(this.id); ">-</button><div id = "myDIV30"><br>
+	std::string semiExpStr;<br>
+	for (size_t i = 0; i&lt;pTc-&gt;length(); ++i)<br>
+		semiExpStr += (*pTc)[i] + " ";<br>
+	return semiExpStr;<br>
+}</div><br>
+<br>
+void CodeAnalysisExecutive::displayDataLines(ASTNode* pNode, bool isSummary)<br>
+{<button id ="969"onclick="myFunction31();toggleText31(this.id); ">-</button><div id = "myDIV31"><br>
+	for (auto datum : pNode-&gt;decl_)<br>
+	{<br>
+		if (pNode-&gt;parentType_ == "namespace" || pNode-&gt;parentType_ == "class" || pNode-&gt;parentType_ == "struct")<br>
+		{<br>
+			if (pNode-&gt;type_ == "function" || pNode-&gt;parentType_ == "function")<br>
+				continue;<br>
+			if (datum.access_ == Access::publ && datum.declType_ == DeclType::dataDecl)<br>
+			{<br>
+				std::ostringstream out;<br>
+				out &lt;&lt; std::right;<br>
+				out &lt;&lt; "\n ";<br>
+				out &lt;&lt; std::setw(25) &lt;&lt; "public data:" &lt;&lt; " ";<br>
+				if (isSummary)<br>
+				{<br>
+					out &lt;&lt; datum.package_ &lt;&lt; " : " &lt;&lt; datum.line_ &lt;&lt; " - "<br>
+						&lt;&lt; pNode-&gt;type_ &lt;&lt; " " &lt;&lt; pNode-&gt;name_ &lt;&lt; "\n " &lt;&lt; std::setw(15) &lt;&lt; " ";<br>
+				}<br>
+				out &lt;&lt; showData(datum.pTc);<br>
+				Rslt::write(out.str());<br>
+			}<br>
+		}<br>
+	}<br>
+}</div><br>
+//----&lt;  helper for displayMetrics() &gt;-------------------------------<br>
+/*<br>
+* - Breaking this out as a separate function allows application to<br>
+*   display metrics for a subset of the Abstract Syntax Tree<br>
+*/<br>
+void CodeAnalysisExecutive::displayMetrics(ASTNode* root)<br>
+{<button id ="968"onclick="myFunction32();toggleText32(this.id); ">-</button><div id = "myDIV32"><br>
+	flushLogger();<br>
+	std::ostringstream out;<br>
+	out &lt;&lt; "Code Metrics - Start Line, Size (lines/code), and Complexity (number of scopes)";<br>
+	Utils::sTitle(out.str(), 3, 92, out, '=');<br>
+	out &lt;&lt; "\n";<br>
+	Rslt::write(out.str());<br>
+<br>
+	std::function&lt;void(ASTNode* pNode)&gt; co = [&](ASTNode* pNode) {<button id ="967"onclick="myFunction33();toggleText33(this.id); ">-</button><div id = "myDIV33"><br>
+		if (<br>
+			pNode-&gt;type_ == "namespace" ||<br>
+			pNode-&gt;type_ == "function" ||<br>
+			pNode-&gt;type_ == "class" ||<br>
+			pNode-&gt;type_ == "interface" ||<br>
+			pNode-&gt;type_ == "struct" ||<br>
+			pNode-&gt;type_ == "lambda"<br>
+			)<br>
+			fileNodes_.push_back(std::pair&lt;File, ASTNode*&gt;(pNode-&gt;package_, pNode));<br>
+	};<br>
+	ASTWalkNoIndent(root, co);<br>
+	std::stable_sort(fileNodes_.begin(), fileNodes_.end(), CompExts());<br>
+	std::stable_sort(fileNodes_.begin(), fileNodes_.end(), CompNames());<br>
+<br>
+	displayHeader();<br>
+<br>
+	std::string prevFile;<br>
+	for (auto item : fileNodes_)<br>
+	{<br>
+		if (item.first != prevFile)<br>
+		{<br>
+			Rslt::write("\n");<br>
+			displayHeader();<br>
+		}<br>
+		displayMetricsLine(item.first, item.second);<br>
+		displayDataLines(item.second);<br>
+		prevFile = item.first;<br>
+	}<br>
+	Rslt::write("\n");<br>
+}</div><br>
+//----&lt; display metrics results of code analysis &gt;---------------<br>
+<br>
+void CodeAnalysisExecutive::displayMetrics()<br>
+{<button id ="966"onclick="myFunction34();toggleText34(this.id); ">-</button><div id = "myDIV34"><br>
+	ASTNode* pGlobalScope = pRepo_-&gt;getGlobalScope();<br>
+	displayMetrics(pGlobalScope);<br>
+}</div><br>
+//----&lt; walk tree of element nodes &gt;---------------------------------<br>
+<br>
+template&lt;typename element&gt;<br>
+void TreeWalk(element* pItem, bool details = false)<br>
+{<button id ="965"onclick="myFunction35();toggleText35(this.id); ">-</button><div id = "myDIV35"><br>
+	static std::string path;<br>
+	if (path != pItem-&gt;path_ && details == true)<br>
+	{<br>
+		path = pItem-&gt;path_;<br>
+		Rslt::write("\n" + path);<br>
+	}<br>
+	static size_t indentLevel = 0;<br>
+	std::ostringstream out;<br>
+	out &lt;&lt; "\n  " &lt;&lt; std::string(2 * indentLevel, ' ') &lt;&lt; pItem-&gt;show();<br>
+	Rslt::write(out.str());<br>
+	auto iter = pItem-&gt;children_.begin();<br>
+	++indentLevel;<br>
+	while (iter != pItem-&gt;children_.end())<br>
+	{<br>
+		TreeWalk(*iter);<br>
+		++iter;<br>
+	}<br>
+	--indentLevel;<br>
+}</div><br>
+//----&lt; display the AbstrSynTree build in processSourceCode() &gt;------<br>
+<br>
+void CodeAnalysisExecutive::displayAST()<br>
+{<button id ="964"onclick="myFunction36();toggleText36(this.id); ">-</button><div id = "myDIV36"><br>
+	flushLogger();<br>
+	ASTNode* pGlobalScope = pRepo_-&gt;getGlobalScope();<br>
+	Utils::title("Abstract Syntax Tree");<br>
+	TreeWalk(pGlobalScope);<br>
+	Rslt::write("\n");<br>
+}</div><br>
+//----&lt; show functions with metrics exceeding specified limits &gt;-----<br>
+<br>
+void CodeAnalysisExecutive::displayMetricSummary(size_t sMax, size_t cMax)<br>
+{<button id ="963"onclick="myFunction37();toggleText37(this.id); ">-</button><div id = "myDIV37"><br>
+	flushLogger();<br>
+	std::ostringstream out;<br>
+	Utils::sTitle("Functions Exceeding Metric Limits and Public Data", 3, 92, out, '=');<br>
+	Rslt::write(out.str());<br>
+	displayHeader();<br>
+<br>
+	if (fileNodes_.size() == 0)  // only build fileNodes_ if displayMetrics hasn't been called<br>
+	{<br>
+		std::function&lt;void(ASTNode* pNode)&gt; co = [&](ASTNode* pNode) {<br>
+			fileNodes_.push_back(std::pair&lt;File, ASTNode*&gt;(pNode-&gt;package_, pNode));<br>
+		};<br>
+		ASTNode* pGlobalNamespace = pRepo_-&gt;getGlobalScope();<br>
+		ASTWalkNoIndent(pGlobalNamespace, co);<br>
+		std::stable_sort(fileNodes_.begin(), fileNodes_.end(), CompExts());<br>
+		std::stable_sort(fileNodes_.begin(), fileNodes_.end(), CompNames());<br>
+	}<br>
+	for (auto item : fileNodes_)<br>
+	{<br>
+		if (item.second-&gt;type_ == "function")<br>
+		{<br>
+			size_t size = item.second-&gt;endLineCount_ - item.second-&gt;startLineCount_ + 1;<br>
+			size_t cmpl = item.second-&gt;complexity_;<br>
+			if (size &gt; sMax || cmpl &gt; cMax)<br>
+				displayMetricsLine(item.first, item.second);<br>
+		}<br>
+	}<br>
+	Rslt::write("\n");<br>
+	for (auto item : fileNodes_)<br>
+	{<br>
+		displayDataLines(item.second, true);<br>
+	}<br>
+	Rslt::write("\n");<br>
+}</div><br>
+//----&lt; comparison functor for sorting SLOC display &gt;----------------<br>
+<br>
+struct compFiles<br>
+{<br>
+private:<br>
+	std::string ChangeFirstCharOfExt(const std::string& fileName) const<br>
+	{<button id ="962"onclick="myFunction38();toggleText38(this.id); ">-</button><div id = "myDIV38"><br>
+		std::string temp = fileName;<br>
+		size_t pos = temp.find_last_of('.');<br>
+		if (pos &lt; temp.size() - 1)<br>
+			if (temp[pos + 1] == 'h')<br>
+				temp[pos + 1] = 'a';<br>
+		return temp;<br>
+	}</div><br>
+public:<br>
+	bool operator()(const std::string& fileName1, const std::string& fileName2) const<br>
+	{<button id ="961"onclick="myFunction39();toggleText39(this.id); ">-</button><div id = "myDIV39"><br>
+		return ChangeFirstCharOfExt(fileName1) &lt; ChangeFirstCharOfExt(fileName2);<br>
+	}</div><br>
+};<br>
+//----&lt; show sizes of all the files processed &gt;----------------------<br>
+<br>
+void CodeAnalysisExecutive::displaySlocs()<br>
+{<button id ="960"onclick="myFunction40();toggleText40(this.id); ">-</button><div id = "myDIV40"><br>
+	flushLogger();<br>
+	Utils::sTitle("File Size - Source Lines of Code", 3, 92);<br>
+	size_t slocCount = 0;<br>
+	std::map&lt;std::string, size_t, compFiles&gt; fileColl;<br>
+	for (auto item : fileMap_)<br>
+	{<br>
+		for (auto file : item.second)<br>
+		{<br>
+			File fileName = FileSystem::Path::getName(file);<br>
+			fileColl[file] = slocMap_[fileName];<br>
+		}<br>
+	}<br>
+	for (auto fitem : fileColl)<br>
+	{<br>
+		std::ostringstream out;<br>
+		out &lt;&lt; "\n  " &lt;&lt; std::setw(8) &lt;&lt; fitem.second &lt;&lt; " : " &lt;&lt; fitem.first;<br>
+		Rslt::write(out.str());<br>
+		slocCount += fitem.second;<br>
+	}<br>
+	std::ostringstream out;<br>
+	out &lt;&lt; "\n\n      Total line count = " &lt;&lt; slocCount &lt;&lt; "\n";<br>
+	Rslt::write(out.str());<br>
+	Rslt::write("\n");<br>
+}</div><br>
+//----&lt; display analysis info based on command line options &gt;--------<br>
+<br>
+void CodeAnalysisExecutive::dispatchOptionalDisplays()<br>
+{<button id ="959"onclick="myFunction41();toggleText41(this.id); ">-</button><div id = "myDIV41"><br>
+	for (auto opt : options_)<br>
+	{<br>
+		switch (opt)<br>
+		{<br>
+		case 'm':<br>
+			displayMetrics();<br>
+			Rslt::start();<br>
+			break;<br>
+		case 'a':<br>
+			displayAST();<br>
+			Rslt::start();<br>
+			break;<br>
+		case 's':<br>
+			displaySlocs();<br>
+			Rslt::start();<br>
+			break;<br>
+		default:<br>
+			break;<br>
+		}<br>
+	}<br>
+}</div><br>
+//----&lt; display analysis info based on command line options &gt;--------<br>
+<br>
+void CodeAnalysisExecutive::setDisplayModes()<br>
+{<button id ="958"onclick="myFunction42();toggleText42(this.id); ">-</button><div id = "myDIV42"><br>
+	for (auto opt : options_)<br>
+	{<br>
+		switch (opt)<br>
+		{<br>
+		case 'r':<br>
+			Rslt::start();<br>
+			break;<br>
+		case 'd':<br>
+			Demo::start();<br>
+			break;<br>
+		case 'b':<br>
+			Dbug::start();<br>
+			break;<br>
+		case 'f':<br>
+			setLogFile("logFile.txt");<br>
+			break;<br>
+		default:<br>
+			if (opt != 'a' && opt != 'b' && opt != 'd' && opt != 'f' && opt != 'm' && opt != 'r' && opt != 's')<br>
+			{<br>
+				std::cout &lt;&lt; "\n\n  unknown option " &lt;&lt; opt &lt;&lt; "\n\n";<br>
+			}<br>
+		}<br>
+	}<br>
+}</div><br>
+//----&lt; helper functions for managing application's logging &gt;--------<br>
+<br>
+void CodeAnalysisExecutive::startLogger(std::ostream& out)<br>
+{<button id ="957"onclick="myFunction43();toggleText43(this.id); ">-</button><div id = "myDIV43"><br>
+	Rslt::attach(&out);<br>
+	Demo::attach(&out);<br>
+	Dbug::attach(&out);<br>
+<br>
+	// will start Demo and Dbug if  have options /d and /b<br>
+<br>
+	setDisplayModes();<br>
+}</div><br>
+<br>
+void CodeAnalysisExecutive::flushLogger()<br>
+{<button id ="956"onclick="myFunction44();toggleText44(this.id); ">-</button><div id = "myDIV44"><br>
+	Rslt::flush();<br>
+	Demo::flush();<br>
+	Dbug::flush();<br>
+}</div><br>
+<br>
+void CodeAnalysisExecutive::stopLogger()<br>
+{<button id ="955"onclick="myFunction45();toggleText45(this.id); ">-</button><div id = "myDIV45"><br>
+	Rslt::flush();<br>
+	Demo::flush();<br>
+	Dbug::flush();<br>
+	Rslt::stop();<br>
+	Demo::stop();<br>
+	Dbug::stop();<br>
+}</div><br>
+//----&lt; open file stream for logging &gt;-------------------------------<br>
+/*<br>
+*  - must come after CodeAnalysisExecutive::processCommandLine()<br>
+*  - must come before starting any of the loggers<br>
+*/<br>
+void CodeAnalysisExecutive::setLogFile(const File& file)<br>
+{<button id ="954"onclick="myFunction46();toggleText46(this.id); ">-</button><div id = "myDIV46"><br>
+	std::string path = getAnalysisPath();<br>
+	path += "\\" + file;<br>
+	pLogStrm_ = new std::ofstream(path);<br>
+	if (pLogStrm_-&gt;good())<br>
+	{<br>
+		Rslt::attach(pLogStrm_);<br>
+		Demo::attach(pLogStrm_);<br>
+		Dbug::attach(pLogStrm_);<br>
+	}<br>
+	else<br>
+		Rslt::write("\n  couldn't open logFile.txt for writing");<br>
+}</div><br>
+<br>
+std::string CodeAnalysisExecutive::systemTime()<br>
+{<button id ="953"onclick="myFunction47();toggleText47(this.id); ">-</button><div id = "myDIV47"><br>
+	time_t sysTime = time(&sysTime);<br>
+	char buffer[27];<br>
+	ctime_s(buffer, 27, &sysTime);<br>
+	buffer[24] = '\0';<br>
+	std::string temp(buffer);<br>
+	return temp;<br>
+}</div><br>
+//----&lt; conduct code analysis &gt;--------------------------------------<br>
+<br>
+<//pre><//body><//html>

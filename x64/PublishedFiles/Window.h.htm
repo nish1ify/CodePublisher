@@ -1,0 +1,232 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "Window.h.htm">Window.h - </a><br><br><br>#ifndef WINDOW_H<br>
+#define WINDOW_H<br>
+/////////////////////////////////////////////////////////////////////<br>
+// Window.h - C++\CLI implementation of WPF Application            //<br>
+//          - Runs Code Static Analysis                            //<br>
+// ver 3.2                                                         //<br>
+//-----------------------------------------------------------------//<br>
+// Jim Fawcett (c) copyright 2016                                  //<br>
+// All rights granted provided this copyright notice is retained   //<br>
+//-----------------------------------------------------------------//<br>
+// Language:    C++, Visual Studio 2015                            //<br>
+// Platform:    Dell XPS 8900, Windows 10                          //<br>
+// Application: Code Analyzer for SMA and OOD, S2016               //<br>
+// Author:      Jim Fawcett, Syracuse University, CST 4-187        //<br>
+//              jfawcett@twcny.rr.com                              //<br>
+/////////////////////////////////////////////////////////////////////<br>
+/*<br>
+*  Package Operations:<br>
+*  -------------------<br>
+*  This package demonstrates how to build a C++\CLI WPF application.  It <br>
+*  provides a class, WPFCppCliDemo, derived from System::Windows::Window<br>
+*  that is compiled with the /clr option to run in the Common Language<br>
+*  Runtime, and another class HeightConverter used for binding a ListBox<br>
+*  to a window view.<br>
+*<br>
+*  The window class hosts, in its window, a tab control with three views for:<br>
+*  starting code analysis execution, setting up analysis parameters, and<br>
+*  determining what will be displayed and logged.<br>
+*<br>
+*  This application provides a GUI that expects to find an analyzer program<br>
+*  and execute it with command line parameters derived from GUI selections.<br>
+*<br>
+*  Required Files:<br>
+*  ---------------<br>
+*  Window.h, Window.cpp, Analyzer.exe<br>
+*<br>
+*  Build Command:<br>
+*  --------------<br>
+*  devenv CppCli-WPF-App.sln<br>
+*  - this builds C++\CLI client application<br>
+*<br>
+*  Maintenance History:<br>
+*  --------------------<br>
+*  ver 3.2 : 27 Oct 2016<br>
+*  - fixed bug passing directory name to Analyzer.  Wrapped the path in<br>
+*    quotes so Analyzer will handle directory names with spaces.<br>
+*  ver 3.1 : 23 Aug 2016<br>
+*  - refactored functions by mapping function content into several<br>
+*    smaller functions<br>
+*  - added additional controls and processing for Setup View<br>
+*  ver 3.0 : 22 Aug 2016<br>
+*  - repurposed from its original demonstration model to become a useful<br>
+*    tool for software analysis<br>
+*  - many changes from the earlier version<br>
+*  ver 2.0 : 15 Apr 2015<br>
+*  - completed message passing demo with moch channel<br>
+*  - added FileBrowserDialog to show files in a selected directory<br>
+*  ver 1.0 : 13 Apr 2015<br>
+*  - incomplete demo with GUI but not connected to mock channel<br>
+*/<br>
+/*<br>
+* Implementation:<br>
+* ---------------<br>
+* This was implemented as a C++/CLI console application.  All of the needed<br>
+* Windows Presentation Foundation Framework is added through references.<br>
+*<br>
+* To do this one must:<br>
+*   Create C++/CLI Console Application<br>
+*   Right-click project &gt; Properties &gt; Common Language Runtime Support &gt; /clr<br>
+*   Right-click project &gt; Add &gt; References<br>
+*     add references to :<br>
+*       System<br>
+*       System.Windows.Presentation<br>
+*       System.Windows.Forms<br>
+*       System.Xaml<br>
+*       WindowsBase<br>
+*       PresentatioCore<br>
+*       PresentationFramework<br>
+*/<br>
+using namespace System;<br>
+using namespace System::Text;<br>
+using namespace System::Windows;<br>
+using namespace System::Windows::Input;<br>
+using namespace System::Windows::Markup;<br>
+using namespace System::Windows::Media;                   // TextBlock formatting<br>
+using namespace System::Windows::Controls;                // TabControl<br>
+using namespace System::Windows::Controls::Primitives;    // StatusBar<br>
+using namespace System::Threading;<br>
+using namespace System::Threading::Tasks;<br>
+using namespace System::Windows::Threading;<br>
+using namespace System::ComponentModel;<br>
+using namespace System::Collections::Generic;<br>
+<br>
+#include &lt;string&gt;<br>
+<br>
+/////////////////////////////////////////////////////////////////////<br>
+// Settings struct:<br>
+//   - holds settings that will be retrieved at startup <br>
+//     and persisted at shutdown<br>
+<br>
+using UserSettings = ref struct Settings { <br>
+  String^ path;                  // analysis path<br>
+  bool h; bool cpp; bool cs;     // search file patterns<br>
+  bool upatt; String^ upattStrs; // selected files<br>
+  bool cl;                       // clear file list<br>
+  bool metrics;                  // show metrics details<br>
+  bool ast;                      // show abstract syntax tree<br>
+  bool slocs;                    // show souce lines of code<br>
+  bool logfile;                  // create log file showing all output<br>
+  bool rslt;                     // show normal program results<br>
+  bool demo;                     // demonstrate program operations<br>
+  bool dbug;                     // show debugging output<br>
+};<br>
+<br>
+namespace CppCliWindows<br>
+{<br>
+  ref class WPFCppCliDemo : Window<br>
+  {<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+    // Controls for Window<br>
+<br>
+    DockPanel^ hDockPanel = gcnew DockPanel();      // support docking statusbar at bottom<br>
+    Grid^ hGrid = gcnew Grid();                    <br>
+    TabControl^ hTabControl = gcnew TabControl();<br>
+    TabItem^ hExecutionTab = gcnew TabItem();<br>
+    TabItem^ hSetupTab = gcnew TabItem();<br>
+    TabItem^ hProcModeTab = gcnew TabItem();<br>
+    StatusBar^ hStatusBar = gcnew StatusBar();<br>
+    StatusBarItem^ hStatusBarItem = gcnew StatusBarItem();<br>
+    TextBlock^ hStatus = gcnew TextBlock();<br>
+<br>
+    // Controls for Execution View<br>
+<br>
+    Grid^ hExecutionGrid = gcnew Grid();<br>
+    Button^ hExecuteViewBrowseButton_ = gcnew Button();<br>
+    Button^ hExecuteViewStartButton_ = gcnew Button();<br>
+    TextBox^ hExecuteViewTextBox_ = gcnew TextBox();<br>
+    //Forms::FolderBrowserDialog^ hFolderBrowserDialog = gcnew Forms::FolderBrowserDialog();<br>
+    Forms::OpenFileDialog^ hOpenFileDialog = gcnew Forms::OpenFileDialog();<br>
+    StackPanel^ hStackPanel1 = gcnew StackPanel();<br>
+<br>
+    // Controls for SetupView View<br>
+<br>
+    Grid^ hSetupGrid = gcnew Grid();<br>
+    StackPanel^ hHdrsStack_ = gcnew StackPanel();<br>
+    CheckBox^ hHdrs_ = gcnew CheckBox();<br>
+    StackPanel^ hImplsStack_ = gcnew StackPanel();<br>
+    CheckBox^ hImpls_ = gcnew CheckBox();<br>
+    StackPanel^ hCSharpStack_ = gcnew StackPanel();<br>
+    CheckBox^ hCSharp_ = gcnew CheckBox();<br>
+    CheckBox^ hUPatt_ = gcnew CheckBox();<br>
+    Label^ hPattLabel_ = gcnew Label();<br>
+    StackPanel^ hClearStack_ = gcnew StackPanel();<br>
+    CheckBox^ hClear_ = gcnew CheckBox();<br>
+    Label^ hPathLabel_ = gcnew Label();<br>
+    TextBox^ hSetupViewTextBox_ = gcnew TextBox();<br>
+    Grid^ hPathPanel_ = gcnew Grid();<br>
+    CheckBox^ hMetrics_ = gcnew CheckBox();<br>
+    CheckBox^ hAST_ = gcnew CheckBox();<br>
+    CheckBox^ hSlocs_ = gcnew CheckBox();<br>
+    Label^ hHdrsLabel_ = gcnew Label();<br>
+    Label^ hImplsLabel_ = gcnew Label();<br>
+    Label^ hCSharpLabel_ = gcnew Label();<br>
+    Label^ hClearLabel_ = gcnew Label();<br>
+    DockPanel^ hUPattDock_ = gcnew DockPanel();<br>
+    ListBox^ hUPattList_ = gcnew ListBox();<br>
+    DockPanel^ hButtonsDocker_ = gcnew DockPanel();<br>
+    Button^ hSetupBrowseButton_ = gcnew Button();<br>
+    Button^ hSetupExecuteButton_ = gcnew Button();<br>
+    Label^ hMetricsLabel_ = gcnew Label();<br>
+    Label^ hASTLabel_ = gcnew Label();<br>
+    Label^ hSlocsLabel_ = gcnew Label();<br>
+<br>
+    // Controls for DisplayModeView View<br>
+<br>
+    Grid^ hModeGrid = gcnew Grid();<br>
+    CheckBox^ hRsltMode_ = gcnew CheckBox();<br>
+    CheckBox^ hDemoMode_ = gcnew CheckBox();<br>
+    CheckBox^ hDbugMode_ = gcnew CheckBox();<br>
+    CheckBox^ hLogFileMode_ = gcnew CheckBox();<br>
+<br>
+  public:<br>
+    WPFCppCliDemo();<br>
+    ~WPFCppCliDemo();<br>
+<br>
+    void getUserSettings();<br>
+    void saveUserSettings();<br>
+<br>
+    void setUpStatusBar();<br>
+    void setUpTabControl();<br>
+    void createExecutionView();<br>
+    void createSetupView();<br>
+    void createDisplayModeView();<br>
+<br>
+    void setCmdLineArgs();<br>
+    void doExecute();<br>
+    void execute(Object^ sender, RoutedEventArgs^ args);<br>
+    void browseForFolder(Object^ sender, RoutedEventArgs^ args);<br>
+    void browseForFolderEx(Object^ sender, RoutedEventArgs^ args);<br>
+    void OnLoaded(Object^ sender, RoutedEventArgs^ args);<br>
+    void Unloading(Object^ sender, System::ComponentModel::CancelEventArgs^ args);<br>
+    void OnExecuteViewTextChanged(Object^ sender, RoutedEventArgs^ args);<br>
+    void OnSetupViewTextChanged(Object^ sender, RoutedEventArgs^ args);<br>
+<br>
+  private:<br>
+    void setTextBlockProperties();<br>
+    void setButtonsProperties();<br>
+    void WPFCppCliDemo::setUpGrid();<br>
+    void WPFCppCliDemo::setUpBinding();<br>
+    void WPFCppCliDemo::setUpSearchButtons();<br>
+    void WPFCppCliDemo::setupFileList();<br>
+    void WPFCppCliDemo::setupFileSearch();<br>
+    void WPFCppCliDemo::setUpPathPanel();<br>
+    void WPFCppCliDemo::setUpPatternsStacks();<br>
+    void WPFCppCliDemo::setUpSearchPanel();<br>
+    void WPFCppCliDemo::setUpDisplaysPanel();<br>
+    void executionTabSelected(Object^ sender, RoutedEventArgs^ args);<br>
+    void setupTabSelected(Object^ sender, RoutedEventArgs^ args);<br>
+    void procModeTabSelected(Object^ sender, RoutedEventArgs^ args);<br>
+    String^ path_;<br>
+    String^ cmdLine_;<br>
+    UserSettings userSettings_;<br>
+<br>
+    ///////////////////////////////////////////////////////<br>
+    // Not used now:<br>
+    //   std::string toStdString(String^ pStr);<br>
+    //   String^ toSystemString(std::string& str);<br>
+  }</div>;<br>
+}<br>
+<br>
+<br>
+#endif<br>
+<//pre><//body><//html>

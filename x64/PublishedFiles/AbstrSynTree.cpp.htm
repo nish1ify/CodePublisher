@@ -1,0 +1,186 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "AbstrSynTree.h.htm">AbstrSynTree.h - </a><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "FileSystem.cpp.htm">FileSystem.cpp - </a><br><a href = "FileSystem.h.htm">FileSystem.h - </a><br><a href = "GrammarHelpers.cpp.htm">GrammarHelpers.cpp - </a><br><a href = "ScopeStack.h.htm">ScopeStack.h - </a><br><a href = "Utilities.h.htm">Utilities.h - </a><br><br><br>/////////////////////////////////////////////////////////////////////<br>
+//  AbstrSynTree.cpp - Represents an Abstract Syntax Tree          //<br>
+//  ver 1.4                                                        //<br>
+//  Language:      Visual C++ 2015                                 //<br>
+//  Platform:      Dell XPS 8900, Windows 10                       //<br>
+//  Application:   Used to support parsing source code             //<br>
+//  Author:        Jim Fawcett, CST 4-187, Syracuse University     //<br>
+//                 (315) 443-3948, jfawcett@twcny.rr.com           //<br>
+/////////////////////////////////////////////////////////////////////<br>
+<br>
+#include "AbstrSynTree.h"<br>
+#include "../Utilities/Utilities.h"<br>
+<br>
+using namespace CodeAnalysis;<br>
+<br>
+//----&lt; default initialization for ASTNodes &gt;------------------------<br>
+<br>
+ASTNode::ASTNode() <br>
+  : type_("anonymous"), parentType_("namespace"), name_("none"), startLineCount_(0), endLineCount_(0), complexity_(0) {}<br>
+<br>
+//----&lt; initialization accepting type and name &gt;---------------------<br>
+<br>
+ASTNode::ASTNode(const Type& type, const Name& name) <br>
+  : type_(type), parentType_("namespace"), name_(name), startLineCount_(0), endLineCount_(0), complexity_(0) {}<br>
+<br>
+//----&lt; destructor deletes children, statements, declarations &gt;------<br>
+<br>
+ASTNode::~ASTNode()<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+  for (auto pNode : children_)<br>
+    delete pNode;<br>
+  for (auto pNode : statements_)<br>
+    delete pNode;<br>
+  for (auto node : decl_)<br>
+  {<br>
+    delete node.pTc;<br>
+  }<br>
+}</div><br>
+//----&lt; returns string with ASTNode description &gt;--------------------<br>
+<br>
+std::string ASTNode::show(bool details)<br>
+{<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+  std::ostringstream temp;<br>
+  temp &lt;&lt; "(";<br>
+  temp &lt;&lt; type_ &lt;&lt; ", ";<br>
+  temp &lt;&lt; parentType_ &lt;&lt; ", ";<br>
+  if(name_ != "none")<br>
+    temp &lt;&lt; name_ &lt;&lt; ", ";<br>
+  if(type_ == "namespace" || type_ == "class" || type_ == "interface" || type_ == "struct" || type_ == "function")<br>
+    temp &lt;&lt; package_ &lt;&lt; ", ";<br>
+  if (details)<br>
+  {<br>
+    temp &lt;&lt; "num children: " &lt;&lt; children_.size() &lt;&lt; ", ";<br>
+    temp &lt;&lt; "num statements: " &lt;&lt; statements_.size() &lt;&lt; ", ";<br>
+  }<br>
+  temp &lt;&lt; "line: " &lt;&lt; startLineCount_ &lt;&lt; ", ";<br>
+  temp &lt;&lt; "size: " &lt;&lt; endLineCount_ - startLineCount_ + 1 &lt;&lt; ", ";<br>
+  temp &lt;&lt; "cplx: " &lt;&lt; complexity_;<br>
+  //temp &lt;&lt; "path: " &lt;&lt; path_;<br>
+  temp &lt;&lt; ")";<br>
+  return temp.str();<br>
+}</div><br>
+//----&lt; create instance and initialize first element &gt;---------------<br>
+/*<br>
+*  - Every AST holds an ASTNode representing the global namespace<br>
+*  - Its children will be namespaces, classes, and global data<br>
+*/<br>
+AbstrSynTree::AbstrSynTree(ScopeStack&lt;ASTNode*&gt;& stack) : stack_(stack)<br>
+{<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+  pGlobalNamespace_ = new ASTNode("namespace", "Global Namespace");<br>
+  pGlobalNamespace_-&gt;startLineCount_ = 1;<br>
+  pGlobalNamespace_-&gt;endLineCount_ = 1;<br>
+  stack_.push(pGlobalNamespace_);<br>
+}</div><br>
+//----&lt; destroy instance and all it's ASTNodes &gt;---------------------<br>
+/*<br>
+*  AST destructor only has to delete its root.  The root will then<br>
+*  delete its children, causing the children to delete their children,<br>
+*  yada, yada, yada<br>
+*/<br>
+AbstrSynTree::~AbstrSynTree()<br>
+{<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+  delete pGlobalNamespace_;<br>
+}</div><br>
+//----&lt; return or accept pointer to global namespace &gt;---------------<br>
+<br>
+ASTNode*& AbstrSynTree::root()<br>
+{<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+  return pGlobalNamespace_;<br>
+}</div><br>
+//----&lt; return AST typemap &gt;-----------------------------------------<br>
+/*<br>
+*  Type map holds ClassName keys linked to each class's ASTNode<br>
+*/<br>
+AbstrSynTree::TypeMap& AbstrSynTree::typeMap()<br>
+{<button id ="994"onclick="myFunction6();toggleText6(this.id); ">-</button><div id = "myDIV6"><br>
+  return typeMap_;<br>
+}</div><br>
+//----&lt; add ASTNode ptr to stack top element's children and push &gt;---<br>
+/*<br>
+ * - Add new scope to ScopeStack after linking to its parent scope<br>
+ * - If type is a class or struct, add to typeMap<br>
+ */<br>
+void AbstrSynTree::add(ASTNode* pNode)<br>
+{<button id ="993"onclick="myFunction7();toggleText7(this.id); ">-</button><div id = "myDIV7"><br>
+  pNode-&gt;parentType_ = stack_.top()-&gt;type_;<br>
+  stack_.top()-&gt;children_.push_back(pNode);  // add as child of stack top<br>
+  stack_.push(pNode);                        // push onto stack<br>
+  if (pNode-&gt;type_ == "class" || pNode-&gt;type_ == "struct" || pNode-&gt;type_ == "interface")<br>
+    typeMap_[pNode-&gt;name_] = pNode;<br>
+}</div><br>
+//----&lt; pop stack's top element &gt;------------------------------------<br>
+/*<br>
+ *  - called at end of scope<br>
+ *  - pop'd ASTNode is still linked to AST<br>
+ */<br>
+ASTNode* AbstrSynTree::pop()<br>
+{<button id ="992"onclick="myFunction8();toggleText8(this.id); ">-</button><div id = "myDIV8"><br>
+  return stack_.pop();<br>
+}</div><br>
+//----&lt; find a type node using typeMap &gt;-----------------------------<br>
+/*<br>
+*  Retrieve ASTNode of class if it exists<br>
+*/<br>
+ASTNode* AbstrSynTree::find(const ClassName& className)<br>
+{<button id ="991"onclick="myFunction9();toggleText9(this.id); ">-</button><div id = "myDIV9"><br>
+  auto iter = typeMap_.find(className);<br>
+  if (iter != typeMap_.end())<br>
+  {<br>
+    return iter-&gt;second;<br>
+  }<br>
+  return nullptr;<br>
+}</div><br>
+<br>
+//----&lt; Test Stub &gt;--------------------------------------------------<br>
+/*<br>
+*  Demonstrates that AbstrSynTree can build a simple Abstract<br>
+*  Syntax Tree and display its contents.<br>
+*/<br>
+#ifdef TEST_ABSTRSYNTREE<br>
+<br>
+#include &lt;functional&gt;<br>
+#include &lt;iostream&gt;<br>
+<br>
+using Utils = Utilities::StringHelper;<br>
+<br>
+int main()<br>
+{<button id ="990"onclick="myFunction10();toggleText10(this.id); ">-</button><div id = "myDIV10"><br>
+  Utils::Title("Testing AbstrSynTree and ASTNode");<br>
+<br>
+  ScopeStack&lt;ASTNode*&gt; stack;<br>
+  AbstrSynTree ast(stack);<br>
+  ASTNode* pX = new ASTNode("class", "X");<br>
+  ast.add(pX);                                        // add X scope<br>
+  ASTNode* pf1 = new ASTNode("function", "f1");<br>
+  ast.add(pf1);                                       // add f1 scope<br>
+  ASTNode* pc1 = new ASTNode("control", "if");<br>
+  ast.add(pc1);                                       // add c1 scope<br>
+  ast.pop();                                          // end c1 scope<br>
+  ast.pop();                                          // end f1 scope<br>
+  ASTNode* pf2 = new ASTNode("function", "f2");<br>
+  ast.add(pf2);                                       // add f2 scope<br>
+  ast.pop();                                          // end f2 scope<br>
+  ast.pop();                                          // end X scope<br>
+<br>
+  std::function&lt;void(ASTNode*, size_t)&gt; co = [](ASTNode* pNode, size_t indentLevel) <br>
+  {<br>
+    std::cout &lt;&lt; "\n  " &lt;&lt; std::string(2 * indentLevel, ' ') &lt;&lt; pNode-&gt;show();<br>
+  };<br>
+<br>
+  ASTWalk(ast.root(), co);<br>
+  std::cout &lt;&lt; "\n";<br>
+<br>
+  Utils::title("testing AbstrSynTree::find");<br>
+<br>
+  ASTNode* pFind = ast.find("X");<br>
+  if (pFind != nullptr)<br>
+    std::cout &lt;&lt; "\n  " &lt;&lt; pFind-&gt;show();<br>
+  else<br>
+    std::cout &lt;&lt; "\n  could not find ASTNode for class X";<br>
+<br>
+  std::cout &lt;&lt; "\n\n";<br>
+}</div><br>
+<br>
+#endif<br>
+<//pre><//body><//html>

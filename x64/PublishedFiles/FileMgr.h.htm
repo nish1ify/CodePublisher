@@ -1,0 +1,177 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "FileMgr.h.htm">FileMgr.h - </a><br><a href = "FileSystem.h.htm">FileSystem.h - </a><br><a href = "IFileMgr.h.htm">IFileMgr.h - </a><br><br><br>#ifndef FILEMGR_H<br>
+#define FILEMGR_H<br>
+/////////////////////////////////////////////////////////////////////<br>
+// FileMgr.h - find files matching specified patterns              //<br>
+//             on a specified path                                 //<br>
+// ver 2.2                                                         //<br>
+// Jim Fawcett, CSE687 - Object Oriented Design, Spring 2016       //<br>
+/////////////////////////////////////////////////////////////////////<br>
+/*<br>
+* Package Operations:<br>
+* -------------------<br>
+* This package provides a class, FileMgr, and object factory function,<br>
+* Create().  It's mission is to search the directory tree, rooted at<br>
+* a specified path, looking for files that match a set of specified<br>
+* patterns.<br>
+*<br>
+* It provides virtual functions file(...), dir(...), and done(), which<br>
+* an application can override to provide application specific processing<br>
+* for the events: file found, directory found, and finished processing.<br>
+*<br>
+* The package also provides interface hooks that serve the same purpose<br>
+* but allow multiple receivers for those events.<br>
+*<br>
+* Required Files:<br>
+* ---------------<br>
+*   FileMgr.h, FileMgr.cpp, IFileMgr.h, <br>
+*   FileSystem.h, FileSystem.cpp<br>
+*<br>
+* Build Process:<br>
+* --------------<br>
+*   devenv FileMgr.sln /rebuild debug<br>
+*<br>
+* Maintenance History:<br>
+* --------------------<br>
+* ver 2.2 : 28 Aug 2016<br>
+* - added more prologue comments<br>
+* ver 2.1 : 31 Jul 2016<br>
+* - added virtual file, dir, and done functions<br>
+* - this lets application override instead of registering for event<br>
+* ver 2.0 : 12 Mar 2016<br>
+* - fixes bug in directory recursion in find(path)<br>
+* - reduces scope of for loop in find for efficiency<br>
+* ver 1.0 : 11 Mar 2016<br>
+* - first release<br>
+*/<br>
+<br>
+#include "IFileMgr.h"<br>
+#include "../FileSystem/FileSystem.h"<br>
+<br>
+namespace FileManager<br>
+{<br>
+  class FileMgr : public IFileMgr<br>
+  {<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+  public:<br>
+    using patterns = std::vector&lt;std::string&gt;;<br>
+    using File = std::string;<br>
+    using Dir = std::string;<br>
+    using fileSubscribers = std::vector&lt;IFileEventHandler*&gt;;<br>
+    using dirSubscribers = std::vector&lt;IDirEventHandler*&gt;;<br>
+    using doneSubscribers = std::vector&lt;IDoneEventHandler*&gt;;<br>
+<br>
+    virtual ~FileMgr() {}<br>
+<br>
+    //----&lt; set default file pattern &gt;-------------------------------<br>
+<br>
+    FileMgr(const std::string& path) : path_(path)<br>
+    {<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+      patterns_.push_back("*.*");<br>
+      pInstance_ = this;<br>
+    }</div><br>
+    //----&lt; return instance of FileMgr &gt;-----------------------------<br>
+<br>
+    static IFileMgr* getInstance()<br>
+    {<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+      return pInstance_;<br>
+    }</div><br>
+    //----&lt; add file pattern, removing default on first call &gt;-------<br>
+<br>
+    void addPattern(const std::string& patt)<br>
+    {<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+      if (patterns_.size() == 1 && patterns_[0] == "*.*")<br>
+        patterns_.pop_back();<br>
+      patterns_.push_back(patt);<br>
+    }</div><br>
+    //----&lt; applications can overload this or reg for fileEvt &gt;------<br>
+<br>
+    virtual void file(const File& f)<br>
+    {<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+      ++numFilesProcessed;<br>
+      for (auto pEvtHandler : fileSubscribers_)<br>
+      {<br>
+        pEvtHandler-&gt;execute(f);<br>
+      }<br>
+    }</div><br>
+    //----&lt; applications can overload this or reg for dirEvt &gt;-------<br>
+<br>
+    virtual void dir(const Dir& fpath)<br>
+    {<button id ="994"onclick="myFunction6();toggleText6(this.id); ">-</button><div id = "myDIV6"><br>
+      for (auto pEvtHandler : dirSubscribers_)<br>
+      {<br>
+        pEvtHandler-&gt;execute(fpath);<br>
+      }<br>
+    }</div><br>
+    //----&lt; applications can overload this or reg for doneEvt &gt;------<br>
+<br>
+    virtual void done()<br>
+    {<button id ="993"onclick="myFunction7();toggleText7(this.id); ">-</button><div id = "myDIV7"><br>
+      for (auto pEvtHandler : doneSubscribers_)<br>
+      {<br>
+        pEvtHandler-&gt;execute(numFilesProcessed);<br>
+      }<br>
+    }</div><br>
+    //----&lt; start search on previously specified path &gt;--------------<br>
+<br>
+    void search()<br>
+    {<button id ="992"onclick="myFunction8();toggleText8(this.id); ">-</button><div id = "myDIV8"><br>
+      find(path_);<br>
+      done();<br>
+    }</div><br>
+    //----&lt; search current path including subdirectories &gt;-----------<br>
+<br>
+    void find(const std::string& path)<br>
+    {<button id ="991"onclick="myFunction9();toggleText9(this.id); ">-</button><div id = "myDIV9"><br>
+      std::string fpath = FileSystem::Path::getFullFileSpec(path);<br>
+      dir(fpath);<br>
+      for (auto patt : patterns_)<br>
+      {<br>
+        std::vector&lt;std::string&gt; files = FileSystem::Directory::getFiles(fpath, patt);<br>
+        for (auto f : files)<br>
+        {<br>
+          file(f);<br>
+        }<br>
+      }<br>
+      std::vector&lt;std::string&gt; dirs = FileSystem::Directory::getDirectories(fpath);<br>
+      for (auto d : dirs)<br>
+      {<br>
+        if (d == "." || d == "..")<br>
+          continue;<br>
+        std::string dpath = fpath + "\\" + d;<br>
+        find(dpath);<br>
+      }<br>
+    }</div><br>
+    //----&lt; applications use this to register for notification &gt;-----<br>
+<br>
+    void regForFiles(IFileEventHandler* pHandler)<br>
+    {<button id ="990"onclick="myFunction10();toggleText10(this.id); ">-</button><div id = "myDIV10"><br>
+      fileSubscribers_.push_back(pHandler);<br>
+    }</div><br>
+    //----&lt; applications use this to register for notification &gt;-----<br>
+<br>
+    void regForDirs(IDirEventHandler* pHandler)<br>
+    {<button id ="989"onclick="myFunction11();toggleText11(this.id); ">-</button><div id = "myDIV11"><br>
+      dirSubscribers_.push_back(pHandler);<br>
+    }</div><br>
+    //----&lt; applications use this to register for notification &gt;-----<br>
+<br>
+    void regForDone(IDoneEventHandler* pHandler)<br>
+    {<button id ="988"onclick="myFunction12();toggleText12(this.id); ">-</button><div id = "myDIV12"><br>
+      doneSubscribers_.push_back(pHandler);<br>
+    }</div><br>
+  private:<br>
+    std::string path_;<br>
+    patterns patterns_;<br>
+    size_t numFilesProcessed = 0;<br>
+    fileSubscribers fileSubscribers_;<br>
+    dirSubscribers dirSubscribers_;<br>
+    doneSubscribers doneSubscribers_;<br>
+    static IFileMgr* pInstance_;<br>
+  }</div>;<br>
+<br>
+  inline IFileMgr* FileMgrFactory::create(const std::string& path)<br>
+  {<button id ="987"onclick="myFunction13();toggleText13(this.id); ">-</button><div id = "myDIV13"><br>
+    return new FileMgr(path);<br>
+  }</div><br>
+}<br>
+#endif<br>
+<//pre><//body><//html>

@@ -1,0 +1,154 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "CppProperties.cpp.htm">CppProperties.cpp - </a><br><a href = "CppProperties.h.htm">CppProperties.h - </a><br><a href = "GrammarHelpers.cpp.htm">GrammarHelpers.cpp - </a><br><br><br>/////////////////////////////////////////////////////////////////////<br>
+// CppProperties.cpp - Defines read/write and read only properties //<br>
+//                                                                 //<br>
+// Jim Fawcett, CSE687 - Object Oriented Design, Spring 2017       //<br>
+/////////////////////////////////////////////////////////////////////<br>
+<br>
+#ifdef TEST_CPPPROPERTIES<br>
+<br>
+#include "CppProperties.h"<br>
+#include &lt;string&gt;<br>
+#include &lt;iostream&gt;<br>
+<br>
+class X<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+public:<br>
+  Property&lt;std::string&gt; name;<br>
+  Property&lt;double&gt; isMutable;<br>
+  Property&lt;const double&gt; pi = 3.1415927;<br>
+  Property&lt;const std::string&gt; constName = "a const name";<br>
+  void show()<br>
+  {<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+    std::cout &lt;&lt; "\n  name:      " &lt;&lt; name;<br>
+    std::cout &lt;&lt; "\n  isMutable: " &lt;&lt; isMutable;<br>
+    std::cout &lt;&lt; "\n  pi:        " &lt;&lt; pi;<br>
+    std::cout &lt;&lt; "\n  constName: " &lt;&lt; constName;<br>
+    std::cout &lt;&lt; "\n";<br>
+  }</div><br>
+}</div>;<br>
+<br>
+/////////////////////////////////////////////////////////////////////<br>
+// Z class:<br>
+// - demonstrates how to customize getter and setter functions<br>
+//   without changing public interface of Z.<br>
+// - That is important because it means that should we decide,<br>
+//   after a class was published, that we should control the<br>
+//   way the property behaves, we won't break existing clients.<br>
+<br>
+/*----&lt; demo function for custom getter and setter &gt;---------------*/<br>
+<br>
+std::string toUpper(const std::string& str)<br>
+{<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+  std::string upperS = str;<br>
+  for (auto& c : upperS)<br>
+    c = toupper(c);<br>
+  return upperS;<br>
+}</div><br>
+<br>
+/////////////////////////////////////////////////////////////////////<br>
+// - We can also modify the behavior of the propert by overriding<br>
+//   the property virtual functions.  That, however, modifies user<br>
+//   interface.<br>
+//<br>
+class UpperCaseProperty : public Property&lt;std::string&gt;  // changes property name<br>
+{<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+public:<br>
+  UpperCaseProperty(const std::string& s) <br>
+  { <br>
+    value = toUpper(s); <br>
+  }</div><br>
+  virtual Property&lt;std::string&gt;& operator=(const std::string &s)<br>
+  {<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+    value = toUpper(s);<br>
+    return *this;<br>
+  }</div><br>
+}</div>;<br>
+<br>
+class Y<br>
+{<button id ="994"onclick="myFunction6();toggleText6(this.id); ">-</button><div id = "myDIV6"><br>
+public:<br>
+  UpperCaseProperty name = "jim";<br>
+}</div>;<br>
+<br>
+class Z<br>
+{<button id ="993"onclick="myFunction7();toggleText7(this.id); ">-</button><div id = "myDIV7"><br>
+public:<br>
+  Z()<br>
+  {<button id ="992"onclick="myFunction8();toggleText8(this.id); ">-</button><div id = "myDIV8"><br>
+    name.newSetter(<br>
+      [](const std::string& s) {<button id ="991"onclick="myFunction9();toggleText9(this.id); ">-</button><div id = "myDIV9"><br>
+        // normally you won't want to use console output - this is just for demo<br>
+        std::cout &lt;&lt; "\n  setter converting property to uppercase";<br>
+        return toUpper(s); <br>
+      }</div><br>
+    );<br>
+    // this also works:<br>
+    // name.setter(toUpper);<br>
+<br>
+    name.newGetter(<br>
+      [](const std::string& val) {<button id ="990"onclick="myFunction10();toggleText10(this.id); ">-</button><div id = "myDIV10"><br>
+      std::string s = val;<br>
+      s[0] = tolower(s[0]);<br>
+      // normally you won't want to use console output - this is just for demo<br>
+      std::cout &lt;&lt; "\n  getter converting first character of property to lowercase";<br>
+      return s;<br>
+    }</div><br>
+    );<br>
+  }</div><br>
+  Property&lt;std::string&gt; name;<br>
+}</div>;<br>
+<br>
+<br>
+int main()<br>
+{<button id ="989"onclick="myFunction11();toggleText11(this.id); ">-</button><div id = "myDIV11"><br>
+  std::cout &lt;&lt; "\n  Demonstrate C++ Properties class";<br>
+  std::cout &lt;&lt; "\n ==================================";<br>
+<br>
+  X x;<br>
+  x.name = "Jim";<br>
+  x.show();<br>
+  std::cout &lt;&lt; "\n  setting isMutable to pi:";<br>
+  std::cout &lt;&lt; "\n --------------------------";<br>
+  x.isMutable = x.pi;<br>
+  x.show();<br>
+  <br>
+  //x.constName = "a new name";  // fails to compile - that's good<br>
+<br>
+  std::cout &lt;&lt; "\n  making a copy of x, called newX with new name:";<br>
+  std::cout &lt;&lt; "\n ------------------------------------------------";<br>
+  X newX(x);<br>
+  newX.name = "joe";<br>
+  newX.show();<br>
+<br>
+  std::cout &lt;&lt; "\n";<br>
+  std::cout &lt;&lt; "\n  demonstrate overriding property \"getter\" function to return capitalized name string";<br>
+  std::cout &lt;&lt; "\n -------------------------------------------------------------------------------------";<br>
+  Y y;<br>
+  std::cout &lt;&lt; "\n  y.name = " &lt;&lt; y.name;<br>
+  std::cout &lt;&lt; "\n";<br>
+<br>
+  std::cout &lt;&lt; "\n  demonstrate providing custom getter and setter functions";<br>
+  std::cout &lt;&lt; "\n ----------------------------------------------------------";<br>
+  std::cout &lt;&lt; "\n";<br>
+<br>
+  Z z;<br>
+  z.name = "fawcett";<br>
+  std::string temp = z.name;<br>
+  std::cout &lt;&lt; "\n  z.name = " &lt;&lt; temp;<br>
+  temp = (z.name).getValue();<br>
+  std::cout &lt;&lt; "\n  name property's internal store value is: " &lt;&lt; temp;<br>
+  std::cout &lt;&lt; "\n";<br>
+<br>
+  std::cout &lt;&lt; "\n  making a copy of z, called newZ:";<br>
+  std::cout &lt;&lt; "\n ----------------------------------";<br>
+  Z newZ(z);<br>
+  temp = newZ.name;<br>
+  std::cout &lt;&lt; "\n  newZ.name = " &lt;&lt; temp;<br>
+<br>
+  std::cout &lt;&lt; "\n\n";<br>
+}</div><br>
+<br>
+<br>
+#endif<br>
+<br>
+<//pre><//body><//html>

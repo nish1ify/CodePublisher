@@ -1,0 +1,4 @@
+﻿  Persistance.cpp
+c:\users\nish1ify\desktop\project 1-ood\beku beku\project-ood_nish\strhelper.h(46): warning C4172: returning address of local variable or temporary
+  Persistance.vcxproj -> C:\Users\nish1ify\Desktop\Project 1-OOD\beku beku\Project-OOD_NISH\Debug\Persistance.exe
+  Persistance.vcxproj -> C:\Users\nish1ify\Desktop\Project 1-OOD\beku beku\Project-OOD_NISH\Debug\Persistance.pdb (Full PDB)

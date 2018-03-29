@@ -1,0 +1,48 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "StrHelper.h.htm">StrHelper.h - </a><br><br><br>#pragma once<br>
+/////////////////////////////////////////////////////////////////////<br>
+// StrHelper.h - trim utilities for std::string                    //<br>
+// ver 1.1                                                         //<br>
+// Source: Evan Teran                                              //<br>
+// Jim Fawcett, CSE687 - Object Oriented Design, Spring 2017       //<br>
+/////////////////////////////////////////////////////////////////////<br>
+/*<br>
+ * Source from consultation with Dr. Google: <br>
+ * http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring<br>
+ *<br>
+ * Note:<br>
+ * - isspace(char), used below, fails with exception on certain non-ascii <br>
+ *   characters. For example, some of the Chinese characters will do that.<br>
+ * - To fix need to use isspace(char, std::locale). You can't directly<br>
+ *   do that with the code below, due to the way it's using std algorithms,<br>
+ *   but it's not too hard to do.<br>
+ * - For our purposes this should not cause a problem.<br>
+ * ToDo:<br>
+ * - convert to using isspace(char, std::locale)<br>
+ * - add cpp file with test stub and test.<br>
+ */<br>
+#include &lt;algorithm&gt; <br>
+#include &lt;functional&gt; <br>
+#include &lt;cctype&gt;<br>
+#include &lt;locale&gt;<br>
+#include &lt;string&gt;<br>
+<br>
+// trim from start<br>
+static inline std::string &ltrim(std::string &s) {<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(),<br>
+    std::not1(std::ptr_fun&lt;int, int&gt;(std::isspace))));<br>
+  return s;<br>
+}</div><br>
+<br>
+// trim from end<br>
+static inline std::string &rtrim(std::string &s) {<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+  s.erase(std::find_if(s.rbegin(), s.rend(),<br>
+    std::not1(std::ptr_fun&lt;int, int&gt;(std::isspace))).base(), s.end());<br>
+  return s;<br>
+}</div><br>
+<br>
+// trim from both ends<br>
+static inline std::string &trim(std::string &s) {<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+  try { return ltrim(rtrim(s)); }<br>
+  catch (...) { return std::string("trimming error"); }<br>
+}</div><br>
+<//pre><//body><//html>

@@ -1,0 +1,198 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "AbstrSynTree.h.htm">AbstrSynTree.h - </a><br><a href = "ActionsAndRules.h.htm">ActionsAndRules.h - </a><br><a href = "ConfigureParser.h.htm">ConfigureParser.h - </a><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "Executive.h.htm">Executive.h - </a><br><a href = "FileMgr.h.htm">FileMgr.h - </a><br><a href = "FileSystem.h.htm">FileSystem.h - </a><br><a href = "Parser.h.htm">Parser.h - </a><br><a href = "Utilities.h.htm">Utilities.h - </a><br><a href = "itokcollection.h.htm">itokcollection.h - </a><br><br><br>#pragma once<br>
+/////////////////////////////////////////////////////////////////////<br>
+// Executive.h - Organizes and Directs Code Analysis               //<br>
+// ver 1.4                                                         //<br>
+//-----------------------------------------------------------------//<br>
+// Jim Fawcett (c) copyright 2016                                  //<br>
+// All rights granted provided this copyright notice is retained   //<br>
+//-----------------------------------------------------------------//<br>
+// Language:    C++, Visual Studio 2015                            //<br>
+// Platform:    Dell XPS 8900, Windows 10                          //<br>
+// Application: Project #2, CSE687 - Object Oriented Design, S2016 //<br>
+// Author:      Jim Fawcett, Syracuse University, CST 4-187        //<br>
+//              jfawcett@twcny.rr.com                              //<br>
+/////////////////////////////////////////////////////////////////////<br>
+/*<br>
+*  Package Operations:<br>
+*  ===================<br>
+*  Executive uses Parser, ScopeStack, and AbstrSynTree packages to<br>
+*  provide static code analysis for C++ and C# files contained in a<br>
+*  specified directory tree.  <br>
+*<br>
+*  It finds files for analysis using FileMgr and, for each file found,<br>
+*  uses parser rules to detect:<br>
+*  - namespace scopes<br>
+*  - class scopes<br>
+*  - struct scopes<br>
+*  - control scopes<br>
+*  - function definition scopes<br>
+*  - data declarations<br>
+*  and uses rule actions to build an Abstract Sytax Tree (AST) <br>
+*  representing the entire code set's static structure.  Each detected<br>
+*  scope becomes a node in the AST which spans all of the files analyzed, <br>
+*  rooted in a top-level Global Namespace scope.<br>
+*<br>
+*  Executive supports displays for:<br>
+*  - a list of all files processed with their source lines of code count.<br>
+*  - an indented representation of the AST.<br>
+*  - a list of all functions that are defined, organized by package, along<br>
+*    with their starting lines, size in lines of code, and complexity as<br>
+*    measured by the number of their descendent nodes.<br>
+*  - a list of all functions which exceed specified function size and/or<br>
+*    complexity.<br>
+*<br>
+*  Because much of the important static structure information is contained<br>
+*  in the AST, it is relatively easy to extend the application to evaluate<br>
+*  additional information, such as class relationships, dependency network,<br>
+*  and static design flaws.<br>
+*<br>
+*  Required Files:<br>
+*  ---------------<br>
+*  - Executive.h, Executive.cpp<br>
+*  - Parser.h, Parser.cpp, ActionsAndRules.h, ActionsAndRules.cpp<br>
+*  - ConfigureParser.h, ConfigureParser.cpp<br>
+*  - ScopeStack.h, ScopeStack.cpp, AbstrSynTree.h, AbstrSynTree.cpp<br>
+*  - ITokenCollection.h, SemiExp.h, SemiExp.cpp, Tokenizer.h, Tokenizer.cpp<br>
+*  - IFileMgr.h, FileMgr.h, FileMgr.cpp, FileSystem.h, FileSystem.cpp<br>
+*  - Logger.h, Logger.cpp, Utilities.h, Utilities.cpp<br>
+*<br>
+*  Maintanence History:<br>
+*  --------------------<br>
+*  ver 1.4 : 26 Feb 2016<br>
+*  - added annunciation of version number<br>
+*  - ActionsAndRules modified to fix minor bug in operator name collection.<br>
+*  - SemiExpression, Tokenizer, and Utilities modified to use isspace from &lt;locale&gt;<br>
+*    rather than &lt;cctype&gt; to avoid error handling some non-ASCII characters.<br>
+*  ver 1.3 : 28 Oct 2016<br>
+*  - added test for interface in AbstrSynTree functions show() and Add(ASTNode*)<br>
+*  - wrapped path in quotes for display<br>
+*  - added check for Byte Order Mark (BOM) in ConfigureParser.cpp<br>
+*  - wrapped path in quotes in Window.cpp in case path has spaces, necessary<br>
+*    since path is passed to Executive on command line.<br>
+*  ver 1.2 : 27 Oct 2016<br>
+*  - fixed bug in displayMetrics(ASTNode*) by adding test for interface<br>
+*  ver 1.1 : 28 Aug 2016<br>
+*  - many changes: added new functions and modified existing functions<br>
+*  ver 1.0 : 09 Aug 2016<br>
+*  - first release<br>
+*<br>
+*/<br>
+#include &lt;string&gt;<br>
+#include &lt;vector&gt;<br>
+#include &lt;unordered_map&gt;<br>
+#include &lt;iosfwd&gt;<br>
+<br>
+#include "../Parser/Parser.h"<br>
+#include "../FileMgr/FileMgr.h"<br>
+#include "../Parser/ConfigureParser.h"<br>
+#include "../Utilities/Utilities.h"<br>
+<br>
+<br>
+namespace CodeAnalysis<br>
+{<br>
+  using Utils = Utilities::StringHelper;<br>
+<br>
+  ///////////////////////////////////////////////////////////////////<br>
+  // AnalFileMgr class derives from FileManager::FileMgr<br>
+  // - provides application specific handling of file and dir events<br>
+<br>
+  class AnalFileMgr : public FileManager::FileMgr<br>
+  {<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+  public:<br>
+    using Path = std::string;<br>
+    using File = std::string;<br>
+    using Files = std::vector&lt;File&gt;;<br>
+    using Pattern = std::string;<br>
+    using Ext = std::string;<br>
+    using FileMap = std::unordered_map&lt;Pattern, Files&gt;;<br>
+<br>
+    AnalFileMgr(const Path& path, FileMap& fileMap);<br>
+    virtual void file(const File& f);<br>
+    virtual void dir(const Dir& d);<br>
+    virtual void done();<br>
+    size_t numFiles();<br>
+    size_t numDirs();<br>
+  private:<br>
+    Path d_;<br>
+    FileMap& fileMap_;<br>
+    bool display_;<br>
+    size_t numFiles_;<br>
+    size_t numDirs_;<br>
+  }</div>;<br>
+<br>
+  ///////////////////////////////////////////////////////////////////<br>
+  // CodeAnalysisExecutive class directs C++ and C# code analysis<br>
+<br>
+  class CodeAnalysisExecutive<br>
+  {<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+  public:<br>
+    using Path = std::string;<br>
+    using Pattern = std::string;<br>
+    using Patterns = std::vector&lt;Pattern&gt;;<br>
+    using File = std::string;<br>
+    using Files = std::vector&lt;File&gt;;<br>
+    using Ext = std::string;<br>
+    using Options = std::vector&lt;char&gt;;<br>
+    using FileMap = std::unordered_map&lt;Pattern, Files&gt;;<br>
+    using FileNodes = std::vector&lt;std::pair&lt;File, ASTNode*&gt;&gt;;<br>
+    using Slocs = size_t;<br>
+    using SlocMap = std::unordered_map&lt;File, Slocs&gt;;<br>
+<br>
+    CodeAnalysisExecutive();<br>
+    virtual ~CodeAnalysisExecutive();<br>
+<br>
+    CodeAnalysisExecutive(const CodeAnalysisExecutive&) = delete;<br>
+    CodeAnalysisExecutive& operator=(const CodeAnalysisExecutive&) = delete;<br>
+<br>
+    void showCommandLineArguments(int argc, char* argv[]);<br>
+    bool ProcessCommandLine(int argc, char* argv[]);<br>
+    FileMap& getFileMap();<br>
+    std::string getAnalysisPath();<br>
+    virtual void getSourceFiles();<br>
+    virtual void processSourceCode(bool showActivity);<br>
+    void complexityAnalysis();<br>
+    std::vector&lt;File&gt;& cppHeaderFiles();<br>
+    std::vector&lt;File&gt;& cppImplemFiles();<br>
+    std::vector&lt;File&gt;& csharpFiles();<br>
+    Slocs fileSLOCs(const File& file);<br>
+    size_t numFiles();<br>
+    size_t numDirs();<br>
+    std::string systemTime();<br>
+    virtual void displayMetrics(ASTNode* root);<br>
+    virtual void displayMetrics();<br>
+    virtual void displayMetricSummary(size_t sMax, size_t cMax);<br>
+    virtual void displaySlocs();<br>
+    virtual void displayAST();<br>
+    virtual void dispatchOptionalDisplays();<br>
+    virtual void setDisplayModes();<br>
+    void startLogger(std::ostream& out);<br>
+    void flushLogger();<br>
+    void stopLogger();<br>
+    void setLogFile(const File& file);<br>
+  private:<br>
+    void setLanguage(const File& file);<br>
+    void showActivity(const File& file);<br>
+    void clearActivity();<br>
+    virtual void displayHeader();<br>
+    virtual void displayMetricsLine(const File& file, ASTNode* pNode);<br>
+    virtual void displayDataLines(ASTNode* pNode, bool isSummary = false);<br>
+    std::string showData(const Scanner::ITokCollection* ptc);<br>
+    Parser* pParser_;<br>
+    ConfigParseForCodeAnal configure_;<br>
+    Repository* pRepo_;<br>
+    Path path_;<br>
+    Patterns patterns_;<br>
+    Options options_;<br>
+    FileMap fileMap_;<br>
+    FileNodes fileNodes_;<br>
+    std::vector&lt;File&gt; cppHeaderFiles_;<br>
+    std::vector&lt;File&gt; cppImplemFiles_;<br>
+    std::vector&lt;File&gt; csharpFiles_;<br>
+    size_t numFiles_;<br>
+    size_t numDirs_;<br>
+    SlocMap slocMap_;<br>
+    bool displayProc_ = false;<br>
+    std::ofstream* pLogStrm_ = nullptr;<br>
+  }</div>;<br>
+}<br>
+<//pre><//body><//html>

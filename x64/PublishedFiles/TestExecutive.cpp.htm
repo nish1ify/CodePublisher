@@ -1,0 +1,266 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "Dependency.h.htm">Dependency.h - </a><br><a href = "Display.h.htm">Display.h - </a><br><a href = "Executive.h.htm">Executive.h - </a><br><a href = "FileSystem.h.htm">FileSystem.h - </a><br><a href = "Logger.h.htm">Logger.h - </a><br><a href = "NoSqlDataBaseApp.h.htm">NoSqlDataBaseApp.h - </a><br><a href = "Publisher.h.htm">Publisher.h - </a><br><a href = "Test2.cpp.htm">Test2.cpp - </a><br><a href = "TestExecutive.cpp.htm">TestExecutive.cpp - </a><br><a href = "TypeTable.h.htm">TypeTable.h - </a><br><br><br>/////////////////////////////////////////////////////////////////////<br>
+//																   //<br>
+//                     Test Executive File                         //<br>
+//                                                                 //<br>
+//  ver 1.0                                                        //<br>
+//                                                                 //<br>
+//  Language:      Visual C++ 2008, SP1                            //<br>
+//  Platform:      Dell Inspiron, Windows 8.1			           //<br>
+//  Application:   NoSql Database - CIS 687 Project 2              //<br>
+//  Author:        Nishanth Chandrasekaran SUID:215242434		   //<br>
+/////////////////////////////////////////////////////////////////////<br>
+<br>
+<br>
+#include "../Parser/Parser.h"<br>
+#include "../FileSystem/FileSystem.h"<br>
+#include "../FileMgr/FileMgr.h"<br>
+#include "../Parser/ActionsAndRules.h"<br>
+#include "../Parser/ConfigureParser.h"<br>
+#include "../AbstractSyntaxTree/AbstrSynTree.h"<br>
+#include "../Logger/Logger.h"<br>
+#include "../Utilities/Utilities.h"<br>
+#include "../Analyzer/DepAnal.h"<br>
+#include "../TypeTable/TypeTable.h"<br>
+#include "../Dependency/Dependency.h"<br>
+#include "../StrongComponent/StrongComponent.h"<br>
+#include "../StrongComponent/StrongComponent.h"<br>
+#include "../Persistance/Persistance.h"<br>
+#include "../Display/Display.h"<br>
+#include "SourceFiles.h"<br>
+#include "../Analyzer/Executive.h"<br>
+#include &lt;sstream&gt;<br>
+#include &lt;string&gt;<br>
+#include &lt;vector&gt;<br>
+#include &lt;map&gt;<br>
+#include &lt;unordered_map&gt;<br>
+#include &lt;functional&gt;<br>
+#include &lt;algorithm&gt;<br>
+#include &lt;exception&gt;<br>
+#include &lt;iomanip&gt;<br>
+#include &lt;chrono&gt;<br>
+#include &lt;ctime&gt;<br>
+#include &lt;fstream&gt;<br>
+#include &lt;sstream&gt;<br>
+#include &lt;iostream&gt;<br>
+<br>
+<br>
+using Key = std::string;<br>
+using Keys = std::vector&lt;Key&gt;;<br>
+using Rslt = Logging::StaticLogger&lt;0&gt;;<br>
+using Demo = Logging::StaticLogger&lt;1&gt;;<br>
+using Dbug = Logging::StaticLogger&lt;2&gt;;<br>
+using Path = std::string;<br>
+using File = std::string;<br>
+using Files = std::vector&lt;File&gt;;<br>
+using Pattern = std::string;<br>
+using Ext = std::string;<br>
+using FileMap = std::unordered_map&lt;Pattern, Files&gt;;<br>
+<br>
+<br>
+using namespace CodeAnalysis;<br>
+<br>
+void Requirementone();<br>
+void Requirementtwo();<br>
+void Requirementthree();<br>
+void Requirementfour();<br>
+void Requirementfive();<br>
+void Requirementsix();<br>
+void Requirementseven();<br>
+void Requirementeight();<br>
+void Requirementnine();<br>
+void Requirementten();<br>
+<br>
+<br>
+//Requirement one<br>
+void Requirementone()<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+<br>
+	std::cout &lt;&lt; "\n *****************************Demonstrating Requirement 1**************************\n";<br>
+	std::cout &lt;&lt; "\n Using Visual Studio 2015 and its C++ Windows Console Projects, as provided in the ECS computer labs\n";<br>
+	Requirementtwo();<br>
+}</div><br>
+<br>
+//Requirement two<br>
+<br>
+void Requirementtwo()<br>
+{<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+	std::cout &lt;&lt; "\n *************************************Demonstrating Requirement 2**************************\n";<br>
+	std::cout &lt;&lt; "\n Using the C++ standard library's streams for all I/O and new and delete for all heap-based memory management\n";<br>
+	Requirementthree();<br>
+<br>
+}</div><br>
+<br>
+//Requirement three<br>
+<br>
+void Requirementthree()<br>
+{<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+	std::cout &lt;&lt; "\n *************************************Demonstrating Requirement 3**************************\n";<br>
+	std::cout &lt;&lt; "\n  Provide a Publisher program that provides for creation of web pages each of which captures the content of a single C++ source code file, e.g., *.h or *.cpp.\n";<br>
+	Requirementfour();<br>
+<br>
+}</div><br>
+//Requirement four<br>
+void Requirementfour()<br>
+{<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+	std::cout &lt;&lt; "\n *************************************Demonstrating Requirement 4**************************\n";<br>
+	std::cout &lt;&lt; "\n  Facility to expand or collapse class bodies, methods, and global functions using JavaScript and CSS properties.\n";<br>
+	Requirementfive();<br>
+}</div><br>
+<br>
+////Requirement five<br>
+<br>
+void Requirementfive()<br>
+{<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+	std::cout &lt;&lt; "\n *********************************Demonstrating Requirement 5**************************\n";<br>
+	std::cout &lt;&lt; "\n  Provides a CSS style sheet that the Publisher uses to style its generated pages and (if you are implementing the previous optional requirement) a JavaScript file that provides functionality to hide and unhide sections of code for outlining, using mouse clicks.\n";<br>
+	Requirementsix();<br>
+}</div><br>
+<br>
+//Requirement six<br>
+<br>
+void Requirementsix()<br>
+{<button id ="994"onclick="myFunction6();toggleText6(this.id); ">-</button><div id = "myDIV6"><br>
+<br>
+	std::cout &lt;&lt; "\n *********************************Demonstrating Requirement 6**************************\n";<br>
+	std::cout &lt;&lt; "\n Embembed in each web page's &lt;head&gt; section links to the style sheet and JavaScript file.\n";<br>
+	Requirementseven();<br>
+<br>
+}</div><br>
+<br>
+//Requirement seven<br>
+<br>
+void Requirementseven()<br>
+{<button id ="993"onclick="myFunction7();toggleText7(this.id); ">-</button><div id = "myDIV7"><br>
+	std::cout &lt;&lt; "\n *********************************Demonstrating Requirement 7**************************\n";<br>
+	std::cout &lt;&lt; "\n  Emembedd HTML5 links to dependent files with a label, at the top of the web page. Publisher shall use functionality from your Project #2 to discover package dependencies within the published set of source files. \n";<br>
+	Requirementeight();<br>
+	<br>
+}</div><br>
+<br>
+//Requirement eight<br>
+<br>
+void Requirementeight()<br>
+{<button id ="992"onclick="myFunction8();toggleText8(this.id); ">-</button><div id = "myDIV8"><br>
+	std::cout &lt;&lt; "\n *********************************Demonstrating Requirement 8**************************\n";<br>
+	std::cout &lt;&lt; "\n Develops command line processing to define the files to publish by specifying path and file patterns.\n";<br>
+	Requirementnine();<br>
+<br>
+<br>
+}</div><br>
+<br>
+////Requirement Nine<br>
+<br>
+void Requirementnine()<br>
+{<button id ="991"onclick="myFunction9();toggleText9(this.id); ">-</button><div id = "myDIV9"><br>
+<br>
+	std::cout &lt;&lt; "\n *********************************Demonstrating Requirement 9**************************\n";<br>
+	std::cout &lt;&lt; "\n Demonstrates the CodePublisher functionality by publishing all the important packages in your Project #3\n";<br>
+	Requirementten();<br>
+}</div><br>
+<br>
+void Requirementten()<br>
+{<button id ="990"onclick="myFunction10();toggleText10(this.id); ">-</button><div id = "myDIV10"><br>
+<br>
+	std::cout &lt;&lt; "\n *********************************Demonstrating Requirement 9**************************\n";<br>
+	std::cout &lt;&lt; "\n Includes an automated unit test suite that demonstrates you meet all the requirements of this project\n";<br>
+<br>
+	std::cout &lt;&lt; "\n\n\n  The Type Table Analysis for the given command line arguments is\n\n";<br>
+<br>
+<br>
+	<br>
+}</div><br>
+<br>
+<br>
+//Function to print the index page<br>
+void printDep(std::ofstream& outer, Keys keys)<br>
+{<button id ="989"onclick="myFunction11();toggleText11(this.id); ">-</button><div id = "myDIV11"><br>
+	outer &lt;&lt; "&lt;html&gt;&lt;head&gt;&lt;title&gt;HTML Reference&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;pre&gt;&lt;br&gt;&lt;br&gt;The Dependency Files are&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;";<br>
+<br>
+	for (File filename : keys)<br>
+	{<br>
+		std::string name = FileSystem::Path::getName(filename);<br>
+		std::string finalpath = name + ".htm";<br>
+        outer &lt;&lt; "&lt;a href = \"";<br>
+		outer &lt;&lt; finalpath;<br>
+		outer &lt;&lt; "\"";<br>
+		outer &lt;&lt; "&gt;";<br>
+		outer &lt;&lt; name;<br>
+		//outer &lt;&lt; " - ";<br>
+		//outer &lt;&lt; finalpath;<br>
+		outer &lt;&lt; "&lt;/a&gt;";<br>
+		outer &lt;&lt; "&lt;br&gt;";<br>
+		outer &lt;&lt; "&lt;br&gt;";<br>
+		outer &lt;&lt; "&lt;br&gt;";<br>
+		outer &lt;&lt; "&lt;br&gt;";<br>
+		<br>
+	}<br>
+	outer &lt;&lt; "&lt;br&gt;";<br>
+	outer &lt;&lt; "&lt;br&gt;";<br>
+	outer &lt;&lt; "&lt;/pre";<br>
+	outer &lt;&lt; "&lt;/body&gt;";<br>
+	outer &lt;&lt; "&lt;/html&gt;";<br>
+<br>
+	outer.close();<br>
+   std::string path = "file:///" + FileSystem::Path::getFullFileSpec("../PublishedFiles/index.htm");<br>
+	std::wstring spath = std::wstring(path.begin(), path.end());<br>
+	LPCWSTR swpath = spath.c_str();<br>
+	LPCWSTR a = L"open";<br>
+	LPCWSTR ie = L"iexplore.exe";<br>
+	ShellExecute(NULL, a, ie, swpath, NULL, SW_SHOWDEFAULT);<br>
+}</div><br>
+<br>
+<br>
+//Main function<br>
+int main(int argc, char* argv[])<br>
+{CodeAnalysisExecutive exec;<br>
+try {<br>
+bool succeeded = exec.ProcessCommandLine(argc, argv);<br>
+if (!succeeded)<br>
+{return 1;<br>
+}exec.getSourceFiles();<br>
+exec.processSourceCode(true);<br>
+std::ostringstream out;<br>
+FileMap fileMapTemp = exec.getFileMap();<br>
+Files allFiles;<br>
+using Pair = std::pair&lt;Pattern, Files&gt;;<br>
+for (Pair pair : fileMapTemp)<br>
+{for (File f : pair.second)<br>
+allFiles.push_back(f);<br>
+}<br>
+Requirementone();<br>
+TypeAnalysis ta;<br>
+NoSqlDb dbtype;<br>
+std::unordered_map&lt;std::string, std::unordered_map&lt;size_t, size_t&gt;&gt; cob = ta.doTypeAnalysis(dbtype);<br>
+TypeAnalysisDisplay(dbtype);<br>
+Dependency dbnew;<br>
+control c;<br>
+c.doActivity(dbtype, dbnew, allFiles, cob);<br>
+DependencyAnalysis(dbnew);<br>
+Publisher p;<br>
+File jss = "../PublishedFiles/jssPublisher.js";<br>
+File css = "../PublishedFiles/Publisher.css";<br>
+File index = "../PublishedFiles/index.htm";<br>
+std::ofstream jssout(jss);<br>
+if (!jssout.is_open())<br>
+{std::cout &lt;&lt; "failed to open file ";<br>
+}std::ofstream cssout(css);<br>
+cssout &lt;&lt; "body {background-color: #00ff00;}";<br>
+Keys kiya = dbnew.keys();<br>
+std::cout &lt;&lt; "\n\n The Published Files are Published in the folder \"PublishedFiles\" \n\n";<br>
+for (Key f : kiya)<br>
+{for (ElementItem e : dbnew.value(f))<br>
+{p.publish(f, e, cob,jssout);<br>
+}}<br>
+std::ofstream outer(index);<br>
+printDep(outer, kiya);<br>
+}catch (std::exception& except)<br>
+{exec.flushLogger();<br>
+std::cout &lt;&lt; "\n\n  caught exception in Executive::main: " + std::string(except.what()) + "\n\n";<br>
+exec.stopLogger();<br>
+return 1;<br>
+}return 0;<br>
+}</div><br>
+<br>
+<br>
+<br>
+<//pre><//body><//html>

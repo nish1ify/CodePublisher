@@ -1,0 +1,656 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "Cpp11-BlockingQueue.cpp.htm">Cpp11-BlockingQueue.cpp - </a><br><a href = "FileSystem.cpp.htm">FileSystem.cpp - </a><br><a href = "GrammarHelpers.cpp.htm">GrammarHelpers.cpp - </a><br><a href = "GrammarHelpers.h.htm">GrammarHelpers.h - </a><br><a href = "Logger.h.htm">Logger.h - </a><br><a href = "SemiExp.h.htm">SemiExp.h - </a><br><a href = "StrHelper.h.htm">StrHelper.h - </a><br><a href = "Utilities.h.htm">Utilities.h - </a><br><a href = "itokcollection.h.htm">itokcollection.h - </a><br><br><br>/////////////////////////////////////////////////////////////////////////<br>
+// GrammarHelpers.cpp - Functions providing base grammatical analyses  //<br>
+// ver 1.3                                                             //<br>
+// Language:    C++, Visual Studio 2015                                //<br>
+// Application: Support for Parsing, CSE687 - Object Oriented Design   //<br>
+// Author:      Jim Fawcett, Syracuse University, CST 4-187            //<br>
+//              jfawcett@twcny.rr.com                                  //<br>
+/////////////////////////////////////////////////////////////////////////<br>
+<br>
+#include "GrammarHelpers.h"<br>
+#include "../SemiExp/SemiExp.h"<br>
+#include "../Logger/Logger.h"<br>
+#include "../Utilities/Utilities.h"<br>
+#include &lt;iostream&gt;<br>
+#include &lt;iomanip&gt;<br>
+#include &lt;sstream&gt;<br>
+<br>
+using namespace CodeAnalysis;<br>
+<br>
+//----&lt; is tok a control keyword for either C++ or C# ? &gt;------------<br>
+<br>
+bool GrammarHelper::isControlKeyWord(const std::string& tok)<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+  const static size_t numKeys = 9;<br>
+  const static std::string keys[numKeys]<br>
+    = { "for", "foreach", "do", "while", "switch", "if", "else", "try", "catch" };<br>
+<br>
+  for (int i = 0; i &lt; numKeys; ++i)<br>
+  {<br>
+    if (tok == keys[i])<br>
+      return true;<br>
+  }<br>
+  return false;<br>
+}</div><br>
+//----&lt; does SemiExp contain at least one control keyword ? &gt;--------<br>
+<br>
+bool GrammarHelper::hasControlKeyWord(const Scanner::ITokCollection& se)<br>
+{<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+  for (size_t i = 0; i &lt; se.length(); ++i)<br>
+  {<br>
+    if (GrammarHelper::isControlKeyWord(se[i]))<br>
+      return true;<br>
+  }<br>
+  return false;<br>
+}</div><br>
+//----&lt; is semiExp a function defin or declar ? &gt;--------------------<br>
+<br>
+bool GrammarHelper::isFunction(const Scanner::ITokCollection& se)<br>
+{<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+  size_t len = se.find("(");<br>
+  if (0 &lt; len && len &lt; se.length() && !isControlKeyWord(se[len - 1]))<br>
+    return true;<br>
+  if (len == 0)<br>
+  {<br>
+    size_t posEquals = se.find("=");<br>
+    if (posEquals &lt; se.length() - 1 && se[posEquals + 1] == "&gt;")<br>
+    {<br>
+      // C# lambda<br>
+      return true;<br>
+    }<br>
+  }<br>
+  return false;<br>
+}</div><br>
+//----&lt; has function and function has at least one argument &gt;--------<br>
+<br>
+bool GrammarHelper::hasArgs(const Scanner::ITokCollection& se)<br>
+{<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+  if (!isFunction(se))<br>
+    return false;<br>
+<br>
+  size_t posOpenParen = se.find("(");<br>
+  size_t posCloseParen = se.find(")");<br>
+  if (posOpenParen &lt; posCloseParen && posCloseParen &lt; se.length())<br>
+  {<br>
+    if (posCloseParen &gt; posOpenParen + 1)<br>
+      return true;<br>
+  }<br>
+  return false;<br>
+}</div><br>
+//----&lt; is semiExp a function defin or declar ? &gt;--------------------<br>
+<br>
+bool GrammarHelper::isFunctionDefinition(const Scanner::ITokCollection& se)<br>
+{<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+  if (se.length() &gt; 0 && se[se.length() - 1] != "{")<br>
+    return false;<br>
+<br>
+  if (isFunction(se))<br>
+    return true;<br>
+  <br>
+  return false;<br>
+}</div><br>
+//----&lt; find last matching token in semiExp &gt;------------------------<br>
+<br>
+size_t GrammarHelper::findLast(const Scanner::ITokCollection& se, const std::string& token)<br>
+{<button id ="994"onclick="myFunction6();toggleText6(this.id); ">-</button><div id = "myDIV6"><br>
+  size_t endIndex = se.length() - 1;<br>
+  for (size_t i = 0; i &lt; se.length(); ++i)<br>
+  {<br>
+    std::string debugTok = se[endIndex - i];<br>
+    if (se[endIndex - i] == token)<br>
+      return endIndex - i;<br>
+  }<br>
+  return se.length();<br>
+}</div><br>
+//----&lt; is tok a type qualifier keyword ? &gt;--------------------------<br>
+<br>
+bool GrammarHelper::isQualifierKeyWord(const std::string& tok)<br>
+{<button id ="993"onclick="myFunction7();toggleText7(this.id); ">-</button><div id = "myDIV7"><br>
+  const size_t numKeys = 21;            // its declar else executable.<br>
+  const static std::string keys[numKeys] = {<br>
+    "const", "extern", "friend", "mutable", "signed", "static", "abstract", <br>
+    "typedef", "typename", "unsigned", "volatile", "&", "*", /*"std",*/ /*"::",*/<br>
+    "public", "protected", "private", ":", "typename", "typedef", "++", "--"<br>
+  };<br>
+  for (int i = 0; i &lt; numKeys; ++i)<br>
+    if (tok == keys[i])<br>
+      return true;<br>
+  return false;<br>
+}</div><br>
+//----&lt; strip qualifier keywords from semiExp &gt;----------------------<br>
+<br>
+void GrammarHelper::removeQualifiers(Scanner::ITokCollection& tc)<br>
+{<button id ="992"onclick="myFunction8();toggleText8(this.id); ">-</button><div id = "myDIV8"><br>
+  size_t i = 0;<br>
+  while (i &lt; tc.length())<br>
+  {<br>
+    if (isQualifierKeyWord(tc[i]))<br>
+      tc.remove(i);<br>
+    else<br>
+      ++i;<br>
+  }<br>
+}</div><br>
+//----&lt; remove calling argument qualifiers after first paren &gt;-------<br>
+<br>
+void GrammarHelper::removeCallingArgQualifiers(Scanner::ITokCollection& tc)<br>
+{<button id ="991"onclick="myFunction9();toggleText9(this.id); ">-</button><div id = "myDIV9"><br>
+  std::string debug = tc.show();<br>
+<br>
+  size_t begin = tc.find("(");<br>
+  size_t end = tc.find(")");<br>
+  if (begin == tc.length() || end == tc.length() || begin &gt;= end)<br>
+    return;<br>
+  size_t i = begin + 1;<br>
+  while (true)<br>
+  {<br>
+    if (isQualifierKeyWord(tc[i]))<br>
+      tc.remove(tc[i]);<br>
+    if (tc[i] == ")")<br>
+      break;<br>
+    ++i;<br>
+  }<br>
+}</div><br>
+//----&lt; is token a scope connector ? &gt;-------------------------------<br>
+<br>
+bool isScopeConnector(const std::string& tok)<br>
+{<button id ="990"onclick="myFunction10();toggleText10(this.id); ">-</button><div id = "myDIV10"><br>
+  if (tok == "::" || tok == ".")<br>
+    return true;<br>
+  return false;<br>
+}</div><br>
+//----&lt; is first function argument a declaration ? &gt;-----------------<br>
+<br>
+bool GrammarHelper::isFirstArgDeclaration(const Scanner::ITokCollection& tc, const std::string& parentType)<br>
+{<button id ="989"onclick="myFunction11();toggleText11(this.id); ">-</button><div id = "myDIV11"><br>
+  if(!isFunction(tc))<br>
+    return false;  // not a function<br>
+<br>
+  if (parentType == "function")<br>
+    return false;  // functions don't declare other functions<br>
+<br>
+  Scanner::SemiExp se;<br>
+  se.clone(tc);<br>
+<br>
+  removeCallingArgQualifiers(se);<br>
+<br>
+  size_t posOpenParen = se.find("(");<br>
+  size_t posComma = se.find(",");<br>
+  size_t posEqual = se.find("=");<br>
+  size_t posCloseParen = se.find(")");<br>
+  <br>
+  // must have two adjacent terms without connector, e.g., type and name<br>
+<br>
+  size_t posEnd = (posComma &lt; posEqual) ? posComma : posEqual;<br>
+  posEnd = (posEnd &lt; posCloseParen) ? posEnd : posCloseParen;<br>
+<br>
+  // Note:<br>
+  // - This set of cases works correctly only if name is included in<br>
+  //   declaration, but that is not required by either C++ or C#.<br>
+  // - An example of the problem is X(tok);  If tok is a<br>
+  //   type then this is a constructor function declaration, otherwise<br>
+  //   it is a function invocation with named parameter tok.<br>
+  // - To fix this we would need to know all defined types, both<br>
+  //   those defined by our code and also by all the libraries used.<br>
+  // - for most analysis applications we do not need a completely<br>
+  //   reliable function declaration detector<br>
+<br>
+  size_t numArgTerms = posEnd - posOpenParen - 1;<br>
+  switch (numArgTerms)<br>
+  {<br>
+  case 1:<br>
+    // must be executable<br>
+    return false;<br>
+    break;<br>
+  case 2:<br>
+    // type name<br>
+    return true;<br>
+    break;<br>
+  case 4:<br>
+    // namespace :: type name<br>
+    return true;<br>
+    break;<br>
+  default:<br>
+    // not an argument declaration<br>
+    break;<br>
+  }<br>
+  return false;<br>
+}</div><br>
+//----&lt; is this a function declaration ? &gt;---------------------------<br>
+<br>
+bool GrammarHelper::isFunctionDeclaration(const Scanner::ITokCollection& tc, const std::string& parentType)<br>
+{<button id ="988"onclick="myFunction12();toggleText12(this.id); ">-</button><div id = "myDIV12"><br>
+  std::string debug = tc.show();<br>
+<br>
+  if (tc.length() == 0)<br>
+    return false;<br>
+<br>
+  if (tc.length() == 1)  // ; or {<br>
+    return false;<br>
+<br>
+  if (tc[tc.length() - 1] != ";")<br>
+    return false;<br>
+<br>
+  std::string tok = tc[tc.length() - 2];<br>
+  if (tok == "delete" || tok == "default")<br>
+    return true;<br>
+<br>
+  if (parentType == "function")<br>
+    return false;<br>
+<br>
+  if (!isFunction(tc))<br>
+    return false;<br>
+<br>
+  if (tc.find("operator") &lt; tc.length())<br>
+    return true;<br>
+<br>
+  Scanner::SemiExp se;<br>
+  se.clone(tc);<br>
+<br>
+  if (isFirstArgDeclaration(se, parentType) || !hasArgs(se))<br>
+    return true;<br>
+<br>
+  return false;<br>
+}</div><br>
+//----&lt; is this a function invocation ? &gt;----------------------------<br>
+/*<br>
+*  will return false unless invocation uses first paren in SemiExp<br>
+*/<br>
+bool GrammarHelper::isFunctionInvocation(const Scanner::ITokCollection& tc, const std::string& parentType)<br>
+{<button id ="987"onclick="myFunction13();toggleText13(this.id); ">-</button><div id = "myDIV13"><br>
+  if (tc.length() == 1)  // ; or {<br>
+    return false;<br>
+<br>
+  if (parentType != "function")<br>
+    return false;<br>
+<br>
+  if (isFunction(tc) && !isFunctionDeclaration(tc, parentType) && !isFunctionDefinition(tc))<br>
+    return true;<br>
+  <br>
+  return false;<br>
+}</div><br>
+//----&lt; has function invocation somewhere in expression ? &gt;----------<br>
+<br>
+bool GrammarHelper::hasFunctionInvocation(const Scanner::ITokCollection& tc, const std::string& parentType)<br>
+{<button id ="986"onclick="myFunction14();toggleText14(this.id); ">-</button><div id = "myDIV14"><br>
+  if (tc.length() == 1)  // ; or {<br>
+    return false;<br>
+<br>
+  if (tc.length() &gt; 0 && tc[tc.length() - 1] == "{")<br>
+    return false;<br>
+<br>
+  if (parentType != "function")<br>
+    return false;<br>
+<br>
+  size_t posParen = tc.find("(");<br>
+  Scanner::SemiExp test;<br>
+  test.clone(tc, posParen - 1);<br>
+  std::string debug = test.show();<br>
+  while (true)<br>
+  {<br>
+    if (isFunctionInvocation(test, parentType))<br>
+      return true;<br>
+    posParen = test.find("(", posParen + 1);<br>
+    if (posParen == test.length())<br>
+      return false;<br>
+    Scanner::SemiExp innerTest;<br>
+    innerTest.clone(test, posParen - 1);<br>
+    test = innerTest;<br>
+    std::string debug = test.show();<br>
+  }<br>
+  return false;<br>
+}</div><br>
+//----&lt; is this a data declaration ? &gt;-------------------------------<br>
+<br>
+bool GrammarHelper::isDataDeclaration(const Scanner::ITokCollection& tc)<br>
+{<button id ="985"onclick="myFunction15();toggleText15(this.id); ">-</button><div id = "myDIV15"><br>
+  std::string debug3 = tc.show();<br>
+<br>
+  if (tc.length() == 1)  // ; or {<br>
+    return false;<br>
+<br>
+  if (tc.length() &gt; 0 && tc[tc.length() - 1] != ";")<br>
+    return false;<br>
+<br>
+  if (tc.length() &gt; 0 && (tc[0] == "~" || tc[0] == "return"))<br>
+    return false;<br>
+<br>
+  if(hasControlKeyWord(tc))<br>
+    return false;<br>
+<br>
+  if (tc.find("&lt;&lt;") &lt; tc.length() || tc.find("&gt;&gt;") &lt; tc.length())<br>
+    return false;<br>
+<br>
+  std::string debug = tc.show();<br>
+<br>
+  Scanner::SemiExp se;<br>
+  se.clone(tc);<br>
+  condenseTemplateTypes(se);<br>
+  removeQualifiers(se);<br>
+  removeCppInitializers(se);<br>
+  <br>
+  // is this a function declaration ?<br>
+<br>
+  size_t posParen = se.find("(");<br>
+  if (posParen &lt; se.length() && (posParen == 2 || posParen == 3))<br>
+    return false;<br>
+<br>
+  removeFunctionArgs(se);<br>
+  <br>
+  // is stripped tc of the form "type name ;" or "namespace :: type name ;"<br>
+<br>
+  std::string debug2 = se.show();<br>
+<br>
+  if (se.length() == 3)<br>
+    return true;<br>
+  if (se.length() == 5 && se[1] == "::")<br>
+    return true;<br>
+<br>
+  return false;<br>
+}</div><br>
+//----&lt; is this an executable statement ? &gt;--------------------------<br>
+<br>
+bool GrammarHelper::isExecutable(const Scanner::ITokCollection& tc, const std::string& parentType)<br>
+{<button id ="984"onclick="myFunction16();toggleText16(this.id); ">-</button><div id = "myDIV16"><br>
+  if (tc.length() == 1)  // ; or {<br>
+    return false;<br>
+<br>
+  if (isFunctionDefinition(tc))<br>
+    return false;<br>
+  if (isFunctionDeclaration(tc, parentType))<br>
+    return false;<br>
+  if (isDataDeclaration(tc))<br>
+    return false;<br>
+  return true;<br>
+}</div><br>
+//----&lt; remove initializers from C++ semiExp &gt;-----------------------<br>
+<br>
+void GrammarHelper::removeCppInitializers(Scanner::ITokCollection& tc)<br>
+{<button id ="983"onclick="myFunction17();toggleText17(this.id); ">-</button><div id = "myDIV17"><br>
+  std::string debug = tc.show();<br>
+  for (size_t i = 0; i &lt; tc.length(); ++i)<br>
+  {<br>
+    if (tc[i] == "=" || tc[i] == "{")<br>
+    {<br>
+      size_t j = i;<br>
+      while (j &lt; tc.length() && tc[j] != ";")<br>
+      {<br>
+        tc.remove(j);<br>
+      }<br>
+      break;<br>
+    }<br>
+  }<br>
+  if (tc.length() &gt; 0 && tc[tc.length() - 1] != ";")<br>
+    tc.push_back(";");<br>
+}</div><br>
+//----&lt; remove initializers from C# semiExp &gt;------------------------<br>
+<br>
+void GrammarHelper::removeCSharpInitializers(Scanner::ITokCollection& tc)<br>
+{<button id ="982"onclick="myFunction18();toggleText18(this.id); ">-</button><div id = "myDIV18"><br>
+  std::string debug = tc.show();<br>
+  for (size_t i = 0; i &lt; tc.length(); ++i)<br>
+  {<br>
+    if (tc[i] == "=")<br>
+    {<br>
+      size_t j = i;<br>
+      while (j &lt; tc.length() && tc[j] != ";")<br>
+      {<br>
+        tc.remove(j);<br>
+      }<br>
+      break;<br>
+    }<br>
+  }<br>
+  if (tc.length() &gt; 0 && tc[tc.length() - 1] != ";")<br>
+    tc.push_back(";");<br>
+}</div><br>
+//----&lt; remove comments from semiExp &gt;-------------------------------<br>
+<br>
+void GrammarHelper::removeComments(Scanner::ITokCollection& tc)<br>
+{<button id ="981"onclick="myFunction19();toggleText19(this.id); ">-</button><div id = "myDIV19"><br>
+  size_t i = 0;<br>
+  while (true)<br>
+  {<br>
+    if (tc.isComment(tc[i]))<br>
+      tc.remove(i);<br>
+    if (++i == tc.length())<br>
+      break;<br>
+  }<br>
+}</div><br>
+//----&lt; condense template spec to single token &gt;---------------------<br>
+<br>
+void GrammarHelper::condenseTemplateTypes(Scanner::ITokCollection& tc)<br>
+{<button id ="980"onclick="myFunction20();toggleText20(this.id); ">-</button><div id = "myDIV20"><br>
+  size_t start = tc.find("&lt;");<br>
+  size_t end = tc.find("&gt;");<br>
+  if (start &gt;= end || start == 0)<br>
+    return;<br>
+  else<br>
+  {<br>
+    if (end == tc.length())<br>
+      end = tc.find("&gt;::");<br>
+    if (end == tc.length())<br>
+      return;<br>
+  }<br>
+  std::string save = tc[end];<br>
+  std::string tok = tc[start - 1];<br>
+  for (size_t i = start; i &lt; end + 1; ++i)<br>
+  {<br>
+    tok += tc[i];<br>
+    if (tc[i] == "typename" || tc[i] == "class")<br>
+      tok += " ";<br>
+  }<br>
+  for (size_t i = start; i &lt; end + 1; ++i)<br>
+    tc.remove(start);<br>
+  if (save == "&gt;::")<br>
+  {<br>
+    tok += tc[start + 1];<br>
+    tc.remove(start);<br>
+  }<br>
+  tc[start - 1] = tok;<br>
+  //std::cout &lt;&lt; "\n  -- " &lt;&lt; tc.show();<br>
+}</div><br>
+//----&lt; remove function's formal arguments &gt;-------------------------<br>
+<br>
+void GrammarHelper::removeFunctionArgs(Scanner::ITokCollection& tc)<br>
+{<button id ="979"onclick="myFunction21();toggleText21(this.id); ">-</button><div id = "myDIV21"><br>
+  std::string debug = tc.show();<br>
+<br>
+  size_t start = tc.find("(");<br>
+  size_t end = tc.find(")");<br>
+  if (start &gt;= end || end == tc.length() || start == 0)<br>
+    return;<br>
+  if (GrammarHelper::isControlKeyWord(tc[start - 1]))<br>
+    return;<br>
+  for (size_t i = start; i &lt; end + 1; ++i)<br>
+    tc.remove(start);<br>
+  //std::cout &lt;&lt; "\n  -- " &lt;&lt; tc.show();<br>
+}</div><br>
+//----&lt; show semiExp with Dbug logger &gt;------------------------------<br>
+<br>
+void GrammarHelper::showParse(const std::string& msg, const Scanner::ITokCollection& se)<br>
+{<button id ="978"onclick="myFunction22();toggleText22(this.id); ">-</button><div id = "myDIV22"><br>
+  using Dbug = Logging::StaticLogger&lt;2&gt;;<br>
+  if (Dbug::running())<br>
+  {<br>
+    std::ostringstream out;<br>
+    out &lt;&lt; "\n  " &lt;&lt; std::left &lt;&lt; std::setw(15) &lt;&lt; msg &lt;&lt; ": ";<br>
+    std::string temp = se.show();<br>
+    if (temp.size() &gt; 80)<br>
+      out &lt;&lt; "\n    ";<br>
+    out &lt;&lt; temp;<br>
+    Dbug::write(out.str());<br>
+  }<br>
+}</div><br>
+<br>
+void GrammarHelper::showParseDemo(const std::string& msg, const Scanner::ITokCollection& se)<br>
+{<button id ="977"onclick="myFunction23();toggleText23(this.id); ">-</button><div id = "myDIV23"><br>
+  using Demo = Logging::StaticLogger&lt;1&gt;;<br>
+  if (Demo::running())<br>
+  {<br>
+    std::ostringstream out;<br>
+    out &lt;&lt; "\n  " &lt;&lt; std::left &lt;&lt; std::setw(32) &lt;&lt; msg &lt;&lt; ": ";<br>
+    std::string temp = se.show();<br>
+    if (temp.size() &gt; 80)<br>
+      out &lt;&lt; "\n    ";<br>
+    out &lt;&lt; temp;<br>
+    Demo::write(out.str());<br>
+  }<br>
+}</div><br>
+<br>
+#ifdef TEST_GRAMMARHELPERS<br>
+<br>
+#include &lt;vector&gt;<br>
+#include &lt;iostream&gt;<br>
+#include "../SemiExp/SemiExp.h"<br>
+#include "../Utilities/Utilities.h"<br>
+<br>
+using namespace Scanner;<br>
+using Token = std::string;<br>
+using Toks = std::vector&lt;Token&gt;;<br>
+<br>
+void load(const Toks& toks, SemiExp& se)<br>
+{<button id ="976"onclick="myFunction24();toggleText24(this.id); ">-</button><div id = "myDIV24"><br>
+  se.clear();<br>
+  for (auto item : toks)<br>
+    se.push_back(item);<br>
+}</div><br>
+<br>
+std::string showQualifiers(const SemiExp& se)<br>
+{<button id ="975"onclick="myFunction25();toggleText25(this.id); ">-</button><div id = "myDIV25"><br>
+  std::string temp;<br>
+  for (size_t i = 0; i &lt; se.length(); ++i)<br>
+    if (GrammarHelper::isQualifierKeyWord(se[i]))<br>
+      temp += se[i] + " ";<br>
+  return temp;<br>
+}</div><br>
+<br>
+void showPredicate(bool predicate, const std::string& msg)<br>
+{<button id ="974"onclick="myFunction26();toggleText26(this.id); ">-</button><div id = "myDIV26"><br>
+  if (predicate)<br>
+    std::cout &lt;&lt; "\n    " &lt;&lt; msg;<br>
+  else<br>
+    std::cout &lt;&lt; "\n    not " &lt;&lt; msg;<br>
+}</div><br>
+<br>
+std::string show(const ITokCollection& se)<br>
+{<button id ="973"onclick="myFunction27();toggleText27(this.id); ">-</button><div id = "myDIV27"><br>
+  std::string temp;<br>
+  for (size_t i = 0; i &lt; se.length(); ++i)<br>
+    temp += se[i] + " ";<br>
+  return temp;<br>
+}</div><br>
+<br>
+void test(const SemiExp& seIn)<br>
+{<button id ="972"onclick="myFunction28();toggleText28(this.id); ">-</button><div id = "myDIV28"><br>
+  Scanner::SemiExp se;<br>
+  se.clone(seIn);<br>
+<br>
+  Utilities::StringHelper::title("Testing GrammarHelpers");<br>
+  std::cout &lt;&lt; "\n  " &lt;&lt; show(se);<br>
+  se.trim();<br>
+  std::cout &lt;&lt; "\n    removing comments:  " &lt;&lt; show(se);<br>
+  std::cout &lt;&lt; "\n    index of last \"(\" is " &lt;&lt; GrammarHelper::findLast(seIn, "(");<br>
+  std::cout &lt;&lt; "\n    qualifier keywords are: " &lt;&lt; showQualifiers(seIn);<br>
+<br>
+  std::string debug = se.show();<br>
+  showPredicate(GrammarHelper::isFunctionDefinition(se), "function definition");<br>
+<br>
+  std::string parentType = "function";<br>
+  std::cout &lt;&lt; "\n  parent type = " &lt;&lt; parentType;<br>
+  showPredicate(GrammarHelper::isFunctionDeclaration(se, parentType), "function declaration");<br>
+  showPredicate(GrammarHelper::isFunctionInvocation(se, parentType), "function invocation");<br>
+  showPredicate(GrammarHelper::hasFunctionInvocation(se, parentType), "has function invocation");<br>
+  parentType = "class";<br>
+  std::cout &lt;&lt; "\n  parent type = " &lt;&lt; parentType;<br>
+  showPredicate(GrammarHelper::isFunctionDeclaration(se, parentType), "function declaration");<br>
+  showPredicate(GrammarHelper::isFunctionInvocation(se, parentType), "function invocation");<br>
+  showPredicate(GrammarHelper::hasFunctionInvocation(se, parentType), "has function invocation");<br>
+<br>
+  showPredicate(GrammarHelper::isDataDeclaration(se), "data declaration");<br>
+  showPredicate(GrammarHelper::hasControlKeyWord(se), "found control Keyword");<br>
+<br>
+  SemiExp testSE;<br>
+  testSE.clone(seIn);<br>
+  GrammarHelper::condenseTemplateTypes(testSE);<br>
+  std::cout &lt;&lt; "\n    condensing template types: " &lt;&lt; show(testSE);<br>
+<br>
+  testSE.clone(seIn);<br>
+  GrammarHelper::removeQualifiers(testSE);<br>
+  std::cout &lt;&lt; "\n    removing qualifiers: " &lt;&lt; show(testSE);<br>
+<br>
+  testSE.clone(seIn);<br>
+  GrammarHelper::removeCppInitializers(testSE);<br>
+  std::cout &lt;&lt; "\n    removing C++ initializers: " &lt;&lt; show(testSE);<br>
+<br>
+  testSE.clone(seIn);<br>
+  GrammarHelper::removeFunctionArgs(testSE);<br>
+  std::cout &lt;&lt; "\n    removing function args: " &lt;&lt; show(testSE);<br>
+<br>
+  testSE.clone(seIn);<br>
+  GrammarHelper::removeCallingArgQualifiers(testSE);<br>
+  std::cout &lt;&lt; "\n    removing qualifiers in function calling sequence: " &lt;&lt; show(testSE);<br>
+  std::cout &lt;&lt; "\n";<br>
+} <br>
+int main()<br>
+{<button id ="971"onclick="myFunction29();toggleText29(this.id); ">-</button><div id = "myDIV29"><br>
+  Utilities::StringHelper::Title("Testing Grammar Functions");<br>
+  std::cout &lt;&lt; "\n  Note:";<br>
+  std::cout &lt;&lt; "\n  - Test functions are applied to SemiExps that they should change and those they should not.";<br>
+  std::cout &lt;&lt; "\n  - The intent is to make sure they do what they are supposed to do without harming SemiExps";<br>
+  std::cout &lt;&lt; "\n  - that should not change.\n";<br>
+<br>
+  Toks tokset0 = { "/* Test0 */", ";" };<br>
+  Toks tokset1 = { "/* Test1 */", "extern", "int", "x", "[", "2", "]", "=", "{", "1", ",", "2", "}", ";" };<br>
+  Toks tokset2 = { "/* Test2 */", "extern", "int", "x", "[", "2", "]", "{", "1", ",", "2", "}", ";" };<br>
+  Toks tokset3 = { "/* Test3 */", "if", "(", "x", "==", "y", ")", "doThing", "(", "3", ")", ";" };<br>
+  Toks tokset4 = { "/* Test4 */", "void", "fun", "(", "int", "anInteger", ")", "{" };<br>
+  Toks tokset5 = { "/* Test5 */", "void", "fun", "(", "int", "anInteger", ")", ";" };<br>
+  Toks tokset6 = { "/* Test6 */", "int", "fun", "(", "const", "int", "&", "anItegerRef", ")", ";" };<br>
+  Toks tokset7 = { "/* Test7 */", "template", "&lt;", "typename", "C", "&gt;", "class", "A", "{" };<br>
+  Toks tokset8 = { "/* Test7 */", "template", "&lt;", "typename", "C", "&gt;", "void", "fun", "(", "const", "C", "&", "c", ")", "{" };<br>
+  Toks tokset9 = { "/* Test9 */", "std", "::","vector", "&lt;", "std", "::", "string", "&gt;", "aVec", ";" };<br>
+  Toks tokset10 = { "/* Test10 */", "ClassName", "(", ")", ";" };<br>
+  Toks tokset11 = { "/* Test11 */", "~", "ClassName", "(", ")", ";" };<br>
+  Toks tokset12 = { "/* Test12 */", "ClassName", "(", "int", "count", ")", ";" };<br>
+  Toks tokset13 = { "/* Test13 */", "ClassName", "(", "int", "count", ")", ":", "count_", "(", "count", ")", "{" };<br>
+  Toks tokset14 = { "/* Test14 */", "Scanner", "::", "SemiExp", "se", "(", "nullPtr", ")", ";" };<br>
+  Toks tokset15 = { "/* Test15 */", "public", "abstract", "void", "doAction", "(", "CSemi", ".", "CSemiExp", "semi", ")", ";" };<br>
+<br>
+  Scanner::SemiExp se;<br>
+<br>
+  load(tokset0, se);<br>
+  test(se);<br>
+  load(tokset1, se);<br>
+  test(se);<br>
+  load(tokset2, se);<br>
+  test(se);<br>
+  load(tokset3, se);<br>
+  test(se);<br>
+  load(tokset4, se);<br>
+  test(se);<br>
+  load(tokset5, se);<br>
+  test(se);<br>
+  load(tokset6, se);<br>
+  test(se);<br>
+  load(tokset7, se);<br>
+  test(se);<br>
+  load(tokset8, se);<br>
+  test(se);<br>
+  load(tokset9, se);<br>
+  test(se);<br>
+  load(tokset10, se);<br>
+  test(se);<br>
+  load(tokset11, se);<br>
+  test(se);<br>
+  load(tokset12, se);<br>
+  test(se);<br>
+  load(tokset13, se);<br>
+  test(se);<br>
+  load(tokset14, se);<br>
+  test(se);<br>
+  load(tokset15, se);<br>
+  test(se);<br>
+}</div><br>
+#endif<br>
+<br>
+<br>
+<//pre><//body><//html>

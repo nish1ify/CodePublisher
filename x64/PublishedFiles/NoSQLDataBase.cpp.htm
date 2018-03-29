@@ -1,0 +1,139 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><br><br><br>
+<br>
+#include "NoSqlDataBase.h"<br>
+#include &lt;iostream&gt;<br>
+<br>
+using StrData = std::string;<br>
+using intData = int;<br>
+//using Key = NoSqlDb::Key;<br>
+//using Keys = NoSqlDb::Keys;<br>
+<br>
+<br>
+using namespace CodeAnalysis;<br>
+<br>
+//using Key = NoSqlDb::Key;<br>
+//using Keys = NoSqlDb::Keys;<br>
+<br>
+int main()<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+	std::cout &lt;&lt; "\n  Demonstrating NoSql Helper Code";<br>
+	std::cout &lt;&lt; "\n =================================\n";<br>
+<br>
+	std::cout &lt;&lt; "\n  Creating and saving NoSqlDb elements with string data";<br>
+	std::cout &lt;&lt; "\n -------------------------------------------------------\n";<br>
+<br>
+<br>
+	/*<br>
+<br>
+	//Element Decleration<br>
+	NoSqlDb db;<br>
+<br>
+	Element elem1;<br>
+	elem1.name = "elem1";                    <br>
+	elem1.category = "test";<br>
+	elem1.description = "elem1-desc";<br>
+	elem1.childrenList = { "elem2" , "elem3" };<br>
+	elem1.data = "elem1's StrData";<br>
+<br>
+	db.save(elem1.name, elem1);<br>
+<br>
+	Element elem2;<br>
+	elem2.name = "elem2";<br>
+	elem2.category = "test";<br>
+	elem2.data = "elem2's StrData";<br>
+	elem2.description = "elem2-desc";<br>
+	elem2.childrenList = { "elem1" ,"elem4" };<br>
+<br>
+	db.save(elem2.name, elem2);<br>
+<br>
+	Element elem3;<br>
+	elem3.name = "elem3";<br>
+	elem3.category = "test";<br>
+	elem3.data = "elem3's StrData";<br>
+	elem3.description = "elem3-desc";<br>
+	elem3.childrenList = { "elem1" , "elem2" };<br>
+<br>
+	db.save(elem3.name, elem3);<br>
+<br>
+	Element elem4;<br>
+	elem4.name = "elem4";<br>
+	elem4.category = "test";<br>
+	elem3.data = "elem3's StrData";<br>
+	elem4.description = "elem3-desc";<br>
+	elem4.childrenList = { "elem1" , "elem2" };<br>
+<br>
+	db.save(elem4.name, elem4);<br>
+<br>
+	<br>
+<br>
+<br>
+	std::cout &lt;&lt; "\n  Retrieving elements from NoSqlDb&lt;string&gt;";<br>
+	std::cout &lt;&lt; "\n ------------------------------------------\n";<br>
+<br>
+	std::cout &lt;&lt; "\n  size of db = " &lt;&lt; db.count() &lt;&lt; "\n";<br>
+	Keys keys = db.keys();<br>
+	for (Key key : keys)<br>
+	{<br>
+		std::cout &lt;&lt; "\n  " &lt;&lt; key &lt;&lt; ":";<br>
+		std::cout &lt;&lt; db.value(key).show();<br>
+	}<br>
+	std::cout &lt;&lt; "\n\n";<br>
+<br>
+	//Updating and Deleting Values in the Databse<br>
+	std::cout &lt;&lt; "Delteting operation performed \n\n\n\n";<br>
+<br>
+<br>
+	db.updateElement(elem2.name, "Name", "Nishu");<br>
+	db.updateElementChild(elem1.name, "children",{ "elem1" , "elem2", "elem3" });<br>
+	db.updateElementData(elem3.name, "Data", "Nishu---data");<br>
+<br>
+	db.deleteElement(elem4.name);<br>
+<br>
+	//Displaying all Elements after updating<br>
+	std::cout &lt;&lt; "\n  size of db = " &lt;&lt; db.count() &lt;&lt; "\n";<br>
+<br>
+	std::cout &lt;&lt; "\n";<br>
+<br>
+	keys = db.keys();<br>
+<br>
+	for (Key key : keys)<br>
+	{<br>
+		std::cout &lt;&lt; "\n  " &lt;&lt; key &lt;&lt; ":";<br>
+		std::cout &lt;&lt; db.value(key).show();<br>
+	}<br>
+	std::cout &lt;&lt; "\n\n";<br>
+<br>
+<br>
+<br>
+	//Creating int DataBase<br>
+<br>
+<br>
+	std::cout &lt;&lt; "\n  Creating and saving NoSqlDb elements with int data";<br>
+	std::cout &lt;&lt; "\n ----------------------------------------------------\n";<br>
+<br>
+	NoSqlDb&lt;intData&gt; idb;<br>
+<br>
+	Element&lt;intData&gt; ielem1;<br>
+	ielem1.name = "elem1";<br>
+	ielem1.category = "test";<br>
+	ielem1.data = 1;<br>
+<br>
+	idb.save(ielem1.name, ielem1);<br>
+<br>
+	idb.updateElementData(ielem1.name, "Data", 3);<br>
+<br>
+	<br>
+<br>
+	Keys keyss = idb.keys();<br>
+	for (Key key : keyss)<br>
+	{<br>
+		std::cout &lt;&lt; "\n  " &lt;&lt; key &lt;&lt; ":";<br>
+		std::cout &lt;&lt; idb.value(key).show();<br>
+	}<br>
+	std::cout &lt;&lt; "\n\n";<br>
+<br>
+	<br>
+	*/<br>
+<br>
+}<br>
+<//pre><//body><//html>

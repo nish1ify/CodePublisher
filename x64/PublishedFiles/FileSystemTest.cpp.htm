@@ -1,0 +1,431 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "CopyOfUnitTest.h.htm">CopyOfUnitTest.h - </a><br><a href = "Cpp11-BlockingQueue.cpp.htm">Cpp11-BlockingQueue.cpp - </a><br><a href = "FileSystem.h.htm">FileSystem.h - </a><br><a href = "FileSystemTest.cpp.htm">FileSystemTest.cpp - </a><br><br><br>/////////////////////////////////////////////////////////////////////////<br>
+// FileSystemTest.cpp - Unit test cases for the FileSystem namespace   //<br>
+// ver 1.1                                                             //<br>
+// ------------------------------------------------------------------- //<br>
+// copyright © Jim Fawcett, 2012                                       //<br>
+// All rights granted provided that this notice is retained            //<br>
+// ------------------------------------------------------------------- //<br>
+// Jim Fawcett, Summer Projects, 2012                                  //<br>
+/////////////////////////////////////////////////////////////////////////<br>
+/*<br>
+ * ver 1.1 : 23 Feb 13<br>
+ * - added tests in File::testFileExists()<br>
+ * - added tests in Path::getExt(...) for test cases <br>
+ *   *.cpp, ../noExt ..\\someFile.ext<br>
+ */<br>
+#include &lt;iostream&gt;<br>
+#include &lt;fstream&gt;<br>
+#include &lt;string&gt;<br>
+#include &lt;algorithm&gt;<br>
+#include "../FileSystemDemo/FileSystem.h"<br>
+#include "UnitTest.h"<br>
+<br>
+using namespace FileSystem;<br>
+using namespace Test;<br>
+<br>
+class TestFile : public TestBase&lt;TestFile&gt;<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+public:<br>
+  TestFile() : testFilePath("..\\FileSystemDemo\\FileSystem.cpp")<br>
+  {<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+    std::cout &lt;&lt; "\n\n  Testing File class";<br>
+  }</div><br>
+  bool testName()<br>
+  {<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+    File testFile(testFilePath);<br>
+    std::string name = Path::getName(testFile.name());<br>
+    std::string check = Path::getName(testFilePath);<br>
+    return checkResult(name == check, "testName");<br>
+  }</div><br>
+<br>
+  bool testGetAndPutLine()<br>
+  {<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+    std::string testline = "a test line";<br>
+    File outTestFile("tempTestFile.txt");<br>
+    outTestFile.open(File::out);<br>
+    if(outTestFile.isGood())<br>
+    {<br>
+      outTestFile.putLine(testline);<br>
+      outTestFile.putLine(testline);<br>
+    }<br>
+    std::string line1, line2;<br>
+    File inTestFile("tempTestFile.txt");<br>
+    inTestFile.open(File::in);<br>
+    if(inTestFile.isGood())<br>
+    {<br>
+      line1 = inTestFile.getLine();<br>
+      line2 = inTestFile.getLine();<br>
+    }<br>
+    return checkResult(<br>
+      line1 == testline && line2 == testline, <br>
+      "testGetAndPutLine"<br>
+    );<br>
+  }</div><br>
+<br>
+  bool testGetAndPutBlock()<br>
+  {<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+    Byte blockArray[] = { 'a', 'b', 'c', 'd' };<br>
+    Block block(&blockArray[0], &blockArray[4]);<br>
+    File outTestFile("tempTestFile.bin");<br>
+    outTestFile.open(File::out, File::binary);<br>
+    if(outTestFile.isGood())<br>
+    {<br>
+      outTestFile.putBlock(block);<br>
+      outTestFile.putBlock(block);<br>
+      outTestFile.close();<br>
+    }<br>
+    Block block1, block2;<br>
+    File inTestFile("tempTestFile.bin");<br>
+    inTestFile.open(File::in, File::binary);<br>
+    if(inTestFile.isGood())<br>
+    {<br>
+      block1 = inTestFile.getBlock(block.size());<br>
+      block2 = inTestFile.getBlock(block.size());<br>
+    }<br>
+    return checkResult(<br>
+      block1 == block && block2 == block, <br>
+      "testGetAndPutBlock"<br>
+    );<br>
+  }</div><br>
+<br>
+  bool testExists()<br>
+  {<button id ="994"onclick="myFunction6();toggleText6(this.id); ">-</button><div id = "myDIV6"><br>
+    bool t1, t2;<br>
+    std::string testFileSpec = "test.txt";<br>
+    t1 = File::exists(testFileSpec);<br>
+    testFileSpec = "foobar";<br>
+    t2 = !File::exists(testFileSpec);<br>
+    return checkResult(t1 & t2, "testExists");<br>
+  }</div><br>
+<br>
+  bool testCopyAndRemove()<br>
+  {<button id ="993"onclick="myFunction7();toggleText7(this.id); ">-</button><div id = "myDIV7"><br>
+    bool t1, t2, t3, t4;<br>
+    std::string testFileSpec = "test.txt";<br>
+    std::string dst = "..\\test.txt";<br>
+    if(File::exists(testFileSpec))<br>
+    {<br>
+      t1 = File::copy(testFileSpec,dst,false);<br>
+      t2 = File::exists(dst);<br>
+      t3 = File::remove(dst);<br>
+      t4 = !File::exists(dst);<br>
+      return checkResult(t1 && t2 && t3 && t4, "testCopyAndRemove");<br>
+    }<br>
+    else<br>
+    {<br>
+      std::cout &lt;&lt; "\n  " &lt;&lt; testFileSpec &lt;&lt; " does not exist";<br>
+      return failed("testCopyAndRemove");<br>
+    }<br>
+  }</div><br>
+<br>
+  bool test()<br>
+  {<button id ="992"onclick="myFunction8();toggleText8(this.id); ">-</button><div id = "myDIV8"><br>
+    bool t1, t2, t3, t4, t5;<br>
+    t1 = doTest(&TestFile::testName);<br>
+    t2 = doTest(&TestFile::testGetAndPutLine);<br>
+    t3 = doTest(&TestFile::testGetAndPutBlock);<br>
+    t4 = doTest(&TestFile::testExists);<br>
+    t5 = doTest(&TestFile::testCopyAndRemove);<br>
+    return t1 && t2 && t3 && t4 && t5;<br>
+  }</div><br>
+private:<br>
+    const std::string testFilePath;<br>
+}</div>;<br>
+<br>
+class TestFileInfo : public TestBase&lt;TestFileInfo&gt;<br>
+{<button id ="991"onclick="myFunction9();toggleText9(this.id); ">-</button><div id = "myDIV9"><br>
+public:<br>
+  TestFileInfo() : testFilePath("..\\FileSystemDemo\\FileSystem.cpp")<br>
+  {<button id ="990"onclick="myFunction10();toggleText10(this.id); ">-</button><div id = "myDIV10"><br>
+    std::cout &lt;&lt; "\n\n  Testing FileInfo class";<br>
+  }</div><br>
+  bool testConstruction()<br>
+  {<button id ="989"onclick="myFunction11();toggleText11(this.id); ">-</button><div id = "myDIV11"><br>
+    FileInfo fi(testFilePath);<br>
+    return checkResult(fi.good(), "testConstruction");<br>
+  }</div><br>
+  bool testName()<br>
+  {<button id ="988"onclick="myFunction12();toggleText12(this.id); ">-</button><div id = "myDIV12"><br>
+    FileInfo fi(testFilePath);<br>
+    std::string name = fi.name();<br>
+    std::string check = Path::getName(testFilePath);<br>
+<br>
+    //throw std::exception("testFileInfoName");<br>
+    <br>
+    return checkResult(name == check, "testName");<br>
+  }</div><br>
+  bool testDate()<br>
+  {<button id ="987"onclick="myFunction13();toggleText13(this.id); ">-</button><div id = "myDIV13"><br>
+    bool t1, t2, t3;<br>
+    FileInfo fi(testFilePath);<br>
+    std::string date = fi.date(FileInfo::fullformat);<br>
+    t1 = date.find("/") &lt; date.size() && date.find(":") &lt; date.size();<br>
+    date = fi.date(FileInfo::dateformat);<br>
+    t2 = date.find("/") &lt; date.size() && date.find(":") &gt;= date.size();<br>
+    date = fi.date(FileInfo::timeformat);<br>
+    t3 = date.find("/") &gt;= date.size() && date.find(":") &lt; date.size();<br>
+    return checkResult(t1 && t2 && t3, "testDate");<br>
+  }</div><br>
+  bool testSize()<br>
+  {<button id ="986"onclick="myFunction14();toggleText14(this.id); ">-</button><div id = "myDIV14"><br>
+    bool t1, t2;<br>
+    File testSize("testsize");<br>
+    testSize.open(File::out, File::binary);<br>
+    FileInfo fi("testsize");<br>
+    size_t size = fi.size();<br>
+    t1 = size == 0;<br>
+    Byte bytes[] = { 'a', 'b', 'c', 'd' };<br>
+    Block blk(&bytes[0], &bytes[4]);<br>
+    testSize.putBlock(blk);<br>
+    testSize.close();<br>
+    FileInfo fi2("testsize");<br>
+    size = fi2.size();<br>
+    t2 = size == 4;<br>
+    return checkResult(t1 && t2, "testSize");<br>
+  }</div><br>
+<br>
+  bool testNameCompare()<br>
+  {<button id ="985"onclick="myFunction15();toggleText15(this.id); ">-</button><div id = "myDIV15"><br>
+    bool t1, t2, t3, t4, t5, t6, t7, t8;<br>
+    t1 = t2 = t3 = t4 = t5 = t6 = t7 = t8 = false;<br>
+    File testA("testA");<br>
+    testA.open(File::out);<br>
+    ::Sleep(50);<br>
+    if(testA.isGood())<br>
+      testA.putLine("a line of text");<br>
+    testA.close();<br>
+    File testB("testB");<br>
+    testB.open(File::out);<br>
+    ::Sleep(50);<br>
+    if(testB.isGood())<br>
+      testB.putLine("text");<br>
+    testB.close();<br>
+    FileInfo fiA("testA");<br>
+    FileInfo fiB("testB");<br>
+    t1 = fiA &lt; fiB;<br>
+    t2 = !(fiA == fiB);<br>
+    t3 = !(fiA &gt; fiB);<br>
+    t4 = fiA.earlier(fiB);<br>
+    t5 = !fiA.later(fiB);<br>
+    size_t sa = fiA.size();<br>
+    size_t sb = fiB.size();<br>
+    t6 = fiA.larger(fiB);<br>
+    t7 = !fiA.smaller(fiB);<br>
+    return checkResult(<br>
+      t1 && t2 && t3 && t4 && t5 && t6 && t7, <br>
+      "testNameCompare"<br>
+    );<br>
+  }</div><br>
+  bool test()<br>
+  {<button id ="984"onclick="myFunction16();toggleText16(this.id); ">-</button><div id = "myDIV16"><br>
+    bool t1, t2, t3, t4, t5;<br>
+    t1 = doTest(&TestFileInfo::testConstruction);<br>
+    t2 = doTest(&TestFileInfo::testName);<br>
+    t3 = doTest(&TestFileInfo::testDate);<br>
+    t4 = doTest(&TestFileInfo::testSize);<br>
+    t5 = doTest(&TestFileInfo::testNameCompare);<br>
+    return t1 && t2 && t3 && t4 && t5;<br>
+  }</div><br>
+private:<br>
+  const std::string testFilePath;<br>
+}</div>;<br>
+<br>
+class TestPath : public TestBase&lt;TestPath&gt;<br>
+{<button id ="983"onclick="myFunction17();toggleText17(this.id); ">-</button><div id = "myDIV17"><br>
+public:<br>
+  TestPath() : testFilePath("..\\FileSystemDemo\\FileSystem.cpp")<br>
+  {<button id ="982"onclick="myFunction18();toggleText18(this.id); ">-</button><div id = "myDIV18"><br>
+    std::cout &lt;&lt; "\n\n  Testing Path class";<br>
+  }</div><br>
+  bool TestGetFullFileSpec()<br>
+  {<button id ="981"onclick="myFunction19();toggleText19(this.id); ">-</button><div id = "myDIV19"><br>
+    std::string currPath = Directory::getCurrentDirectory();<br>
+    std::string fileSpec = Path::getFullFileSpec(".");<br>
+    return checkResult(currPath == fileSpec, "TestGetFullFileSpec");<br>
+  }</div><br>
+  bool TestGetPath()<br>
+  {<button id ="980"onclick="myFunction20();toggleText20(this.id); ">-</button><div id = "myDIV20"><br>
+    bool t1, t2;<br>
+    std::string path = Path::getPath("..\\foobar\\someFile.txt");<br>
+    std::string expected = "..\\foobar\\";<br>
+    t1 = path == expected;<br>
+    path = Path::getPath("../foobar/someFile.txt");<br>
+    expected = "../foobar/";<br>
+    t2 = path == expected;<br>
+    return checkResult(t1 && t2, "TestGetPath");<br>
+  }</div><br>
+  bool TestGetName()<br>
+  {<button id ="979"onclick="myFunction21();toggleText21(this.id); ">-</button><div id = "myDIV21"><br>
+    bool t1, t2, t3;<br>
+    std::string name = Path::getName("..\\foobar\\someFile.txt");<br>
+    std::string expected = "someFile.txt";<br>
+    t1 = name == expected;<br>
+    name = Path::getName("../foobar/someFile.txt", false);<br>
+    expected = "someFile";<br>
+    t2 = name == expected;<br>
+    name = Path::getName("..\\foobar\\someFile");<br>
+    expected = "someFile";<br>
+    t3 = name == expected;<br>
+    return checkResult(t1 && t2 && t3, "TestGetName");<br>
+  }</div><br>
+  bool TestGetExt()<br>
+  {<button id ="978"onclick="myFunction22();toggleText22(this.id); ">-</button><div id = "myDIV22"><br>
+    bool t1, t2, t3, t4, t5;<br>
+    std::string ext = Path::getExt("../foobar/someFile.txt");<br>
+    std::string expected = "txt";<br>
+    t1 = ext == expected;<br>
+    ext = Path::getExt("../foobar/someFile.txt");<br>
+    expected = "txt";<br>
+    t2 = ext == expected;<br>
+    ext = Path::getExt("../foobar/someFile");<br>
+    expected = "";<br>
+    t3 = ext == expected;<br>
+    ext = Path::getExt("../someDir/someFile.cpp");<br>
+    expected = "cpp";<br>
+    t4 = ext == expected;<br>
+    ext = Path::getExt("*.cpp");<br>
+    expected = "cpp";<br>
+    t5 = ext == expected;<br>
+    return checkResult(t1 && t2 && t3 && t4 && t5, "TestGetExt");<br>
+  }</div><br>
+  bool TestFileSpec()<br>
+  {<button id ="977"onclick="myFunction23();toggleText23(this.id); ">-</button><div id = "myDIV23"><br>
+    bool t1, t2, t3;<br>
+    std::string path = "./foo";<br>
+    std::string name = "bar.txt";<br>
+    std::string expected = "./foo/bar.txt";<br>
+    std::string fileSpec = Path::fileSpec(path,name);<br>
+    t1 = fileSpec == expected;<br>
+    path = "..\\foo";<br>
+    name = "bar";<br>
+    expected = "..\\foo\\bar";<br>
+    fileSpec = Path::fileSpec(path,name);<br>
+    t2 = fileSpec == expected;<br>
+    path = "C:\\foo";<br>
+    name = "bar.cpp";<br>
+    expected = "C:\\foo\\bar.cpp";<br>
+    fileSpec = Path::fileSpec(path,name);<br>
+    t3 = fileSpec == expected;<br>
+    return checkResult(t1 && t2 && t3, "TestFileSpec");<br>
+  }</div><br>
+  bool test()<br>
+  {<button id ="976"onclick="myFunction24();toggleText24(this.id); ">-</button><div id = "myDIV24"><br>
+    bool t1, t2, t3, t4, t5;<br>
+    t1 = doTest(&TestPath::TestGetFullFileSpec);<br>
+    t2 = doTest(&TestPath::TestGetPath);<br>
+    t3 = doTest(&TestPath::TestGetName);<br>
+    t4 = doTest(&TestPath::TestGetExt);<br>
+    t5 = doTest(&TestPath::TestFileSpec);<br>
+    return t1 && t2 && t3 && t4 && t5;<br>
+  }</div><br>
+private:<br>
+  const std::string testFilePath;<br>
+}</div>;<br>
+<br>
+class TestDirectory : public TestBase&lt;TestDirectory&gt;<br>
+{<button id ="975"onclick="myFunction25();toggleText25(this.id); ">-</button><div id = "myDIV25"><br>
+public:<br>
+  TestDirectory() : testPath_("c:\\temp")<br>
+  {<button id ="974"onclick="myFunction26();toggleText26(this.id); ">-</button><div id = "myDIV26"><br>
+    std::cout &lt;&lt; "\n\n  Testing Directory class";<br>
+  }</div><br>
+  bool TestCreateRemoveExists()<br>
+  {<button id ="973"onclick="myFunction27();toggleText27(this.id); ">-</button><div id = "myDIV27"><br>
+    bool t1, t2, t3;<br>
+    std::string path = testPath_ + "\\TestDir";<br>
+    t1 = Directory::create(path) || Directory::exists(path);<br>
+    ::Sleep(100);<br>
+    t2 = Directory::exists(path);<br>
+    ::Sleep(100);<br>
+    t3 = Directory::remove(path) || !Directory::exists(path);<br>
+    return checkResult(t1 && t2 && t3, "TestCreateRemoveExists");<br>
+  }</div><br>
+  bool TestGetAndSetCurrentDirectory()<br>
+  {<button id ="972"onclick="myFunction28();toggleText28(this.id); ">-</button><div id = "myDIV28"><br>
+    bool t1, t2, t3;<br>
+    std::string currPath = Directory::getCurrentDirectory();<br>
+    t1 = Path::getFullFileSpec(".") == currPath;<br>
+    Directory::setCurrentDirectory(testPath_);<br>
+    std::string newPath = Directory::getCurrentDirectory();<br>
+    t2 = newPath == Path::getFullFileSpec(testPath_);<br>
+    Directory::setCurrentDirectory(currPath);<br>
+    t3 = Directory::getCurrentDirectory() == currPath;<br>
+    return checkResult(t1 && t2 && t3, "TestGetAndSetCurrentDirectory");<br>
+  }</div><br>
+  bool TestGetFilesAndDirectories()<br>
+  {<button id ="971"onclick="myFunction29();toggleText29(this.id); ">-</button><div id = "myDIV29"><br>
+    bool t1, t2, t3, t4, t5;<br>
+<br>
+    // test finding files by copying know files then getting them<br>
+    std::string srcPath = "..\\FileSystemDemo";<br>
+    std::string dstPath = testPath_ + "\\testDir1";<br>
+<br>
+    // create place to look<br>
+    Directory::create(dstPath);<br>
+    // store files there<br>
+    std::string fileSpec1 = Path::fileSpec(srcPath,"FileSystem.h");<br>
+    std::string fileSpec2 = Path::fileSpec(srcPath,"FileSystem.cpp");<br>
+    std::string dstFile1 = Path::fileSpec(dstPath,"FileSystem.h"); <br>
+    File::copy(fileSpec1, dstFile1);<br>
+    std::string dstFile2 = Path::fileSpec(dstPath,"FileSystem.cpp");<br>
+    File::copy(fileSpec2, dstFile2);<br>
+    t1 = File::exists(dstFile1) && File::exists(dstFile2);<br>
+    // now test getFiles<br>
+    std::vector&lt;std::string&gt; files = Directory::getFiles(dstPath);<br>
+    std::vector&lt;std::string&gt;::iterator iter <br>
+      = std::find(files.begin(), files.end(), "FileSystem.h");<br>
+    t2 = iter != files.end();<br>
+    iter = std::find(files.begin(), files.end(), "FileSystem.cpp");<br>
+    t3 = iter != files.end();<br>
+<br>
+    // test finding directories by creating them and then finding them<br>
+    Directory::create(testPath_ + "\\testDir2");<br>
+    Directory::create(testPath_ + "\\testDir3");<br>
+    std::vector&lt;std::string&gt; dirs = Directory::getDirectories(testPath_);<br>
+    iter = std::find(dirs.begin(), dirs.end(), "testDir2");<br>
+    t4 = iter != dirs.end();<br>
+    iter = std::find(dirs.begin(), dirs.end(), "testDir3");<br>
+    t5 = iter != dirs.end();<br>
+<br>
+    // clean up<br>
+    Directory::remove(testPath_ + "\\testDir1");  // fails because it has contents<br>
+    Directory::remove(testPath_ + "\\testDir2");  <br>
+    Directory::remove(testPath_ + "\\testDir3");<br>
+<br>
+    return checkResult(t1 && t2 && t3 && t4 &&t5, "TestGetFilesAndDirectories");<br>
+  }</div><br>
+  bool test()  // overriding inherited test method<br>
+  {<button id ="970"onclick="myFunction30();toggleText30(this.id); ">-</button><div id = "myDIV30"><br>
+    bool t1, t2, t3;<br>
+    t1 = doTest(&TestDirectory::TestCreateRemoveExists);<br>
+    t2 = doTest(&TestDirectory::TestGetAndSetCurrentDirectory);<br>
+    t3 = doTest(&TestDirectory::TestGetFilesAndDirectories);<br>
+    return t1 && t2 && t3;<br>
+  }</div><br>
+private:<br>
+  std::string testPath_;<br>
+}</div>;<br>
+<br>
+bool test()<br>
+{<button id ="969"onclick="myFunction31();toggleText31(this.id); ">-</button><div id = "myDIV31"><br>
+  bool t1, t2, t3, t4;<br>
+  TestFile tf;<br>
+  t1 = tf.test();<br>
+  TestFileInfo tfi;<br>
+  t2 = tfi.test();<br>
+  TestPath tp;<br>
+  t3 = tp.test();<br>
+  TestDirectory td;<br>
+  t4 = td.test();<br>
+  return t1 && t2 && t3;<br>
+}</div><br>
+int main(int argc, char* argv[])<br>
+{<button id ="968"onclick="myFunction32();toggleText32(this.id); ">-</button><div id = "myDIV32"><br>
+  Title("Testing FileSystem namespace classes");<br>
+<br>
+  if(test())<br>
+    std::cout &lt;&lt; "\n\n  all tests passed\n\n";<br>
+  else<br>
+    std::cout &lt;&lt; "\n\n  at least one test failed\n\n";<br>
+}<br>
+<//pre><//body><//html>

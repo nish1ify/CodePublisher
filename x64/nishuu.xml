@@ -1,0 +1,18 @@
+
+  <DBX>
+    <SCC_Component>
+      <Child>
+        Test1.h
+      </Child>
+    </SCC_Component>
+    <SCC_Component>
+      <Child>
+        Test1.cpp
+      </Child>
+    </SCC_Component>
+    <SCC_Component>
+      <Child>
+        Test2.cpp
+      </Child>
+    </SCC_Component>
+  </DBX>

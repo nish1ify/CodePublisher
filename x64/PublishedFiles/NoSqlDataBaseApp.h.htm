@@ -1,0 +1,176 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "FileSystem.h.htm">FileSystem.h - </a><br><a href = "NoSqlDataBaseApp.h.htm">NoSqlDataBaseApp.h - </a><br><a href = "Utilities.h.htm">Utilities.h - </a><br><br><br>#pragma once<br>
+/////////////////////////////////////////////////////////////////////<br>
+//  NoSqlDataBaseApp.h -  Class for Dependency Table               //<br>
+//  ver 1.0                                                        //<br>
+//                                                                 //<br>
+//  Language:      Visual C++ 2008, SP1                            //<br>
+//  Platform:      Dell Inspiron, Windows 8.1			           //<br>
+//  Application:   CodeAnalyzerEx - CIS 687 Project 3             //<br>
+//  Author:        Nishanth Chandrasekaran SUID:215242434		   //<br>
+/////////////////////////////////////////////////////////////////////<br>
+/*<br>
+Module Operations:<br>
+==================<br>
+This module defines a Dependency class <br>
+* - The functions defined in this class are used for,<br>
+&gt; Storing Dependency relationships<br>
+Public Interface:<br>
+=================<br>
+Element Class &gt; ---- &gt;        nchildrenList;<br>
+Dependency Class<br>
+Build Process:<br>
+==============<br>
+Required files<br>
+-CppProperties<br>
+-Tokenizer<br>
+-TypeTable<br>
+Maintenance History:<br>
+====================<br>
+ver 1.0 : 4 Apl 2017<br>
+- first release<br>
+*/<br>
+#include &lt;sstream&gt;<br>
+#include &lt;vector&gt;<br>
+#include &lt;iomanip&gt;<br>
+#include &lt;iostream&gt;<br>
+#include &lt;ctime&gt;<br>
+#include "../CppProperties/CppProperties.h"<br>
+#include "../Tokenizer/Tokenizer.h"<br>
+#include "../TypeTable/TypeTable.h"<br>
+#include "../Utilities/Utilities.h"<br>
+<br>
+using Key = std::string;<br>
+using Keys = std::vector&lt;Key&gt;;<br>
+using File = std::string;<br>
+using Files = std::vector&lt;File&gt;;<br>
+using Pattern = std::string;<br>
+using Ext = std::string;<br>
+using FileMap = std::unordered_map&lt;Pattern, Files&gt;;<br>
+<br>
+<br>
+using Helper = Utilities::StringHelper;<br>
+using namespace Utilities;<br>
+<br>
+/////////////////////////////////////////////////////////////////////<br>
+// Element class represents a data record in our NoSql database<br>
+// - in our NoSql database that is just the value in a key/value pair<br>
+// - it needs to store child data<br>
+//<br>
+class ElementItem<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+public:<br>
+	using Name = std::string;<br>
+<br>
+	std::vector&lt;std::string&gt; childrenList;<br>
+<br>
+	std::string showelement();<br>
+<br>
+}</div>;<br>
+<br>
+//Function to print all the files<br>
+std::string ElementItem::showelement()<br>
+{<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+	std::ostringstream out;<br>
+	out.setf(std::ios::adjustfield, std::ios::left);<br>
+<br>
+	out &lt;&lt; "\n    " &lt;&lt; std::setw(8) &lt;&lt; "Children are   " &lt;&lt; " : ";<br>
+	std::vector&lt;std::string&gt; c = childrenList;<br>
+	for (Key k : c)<br>
+	{<br>
+		out &lt;&lt; "  ";<br>
+		out &lt;&lt; k;<br>
+<br>
+	}<br>
+	out &lt;&lt; "\n";<br>
+	return out.str();<br>
+}</div><br>
+<br>
+<br>
+/////////////////////////////////////////////////////////////////////<br>
+// NoSqlDb class is a key/value pair in-memory database<br>
+// - stores and retrieves elements<br>
+//<br>
+<br>
+class Dependency<br>
+{<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+public:<br>
+	using Key = std::string;<br>
+	using Keys = std::vector&lt;Key&gt;;<br>
+	Keys keys();<br>
+	bool save(Key key, ElementItem elem);<br>
+	std::vector&lt;ElementItem&gt; value(Key key);<br>
+	size_t count();<br>
+<br>
+<br>
+	void Dependency::showKeys(Keys list);<br>
+private:<br>
+	using Item = std::pair&lt;Key,std::vector&lt;ElementItem&gt;&gt;;<br>
+	std::unordered_map&lt;Key,std::vector&lt;ElementItem&gt;&gt; store;<br>
+}</div>;<br>
+<br>
+//Returns the keys of the DataBase<br>
+<br>
+typename Dependency::Keys Dependency::keys()<br>
+{<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+	Keys keys;<br>
+	for (Item item : store)<br>
+	{<br>
+		keys.push_back(item.first);<br>
+	}<br>
+	return keys;<br>
+}</div><br>
+<br>
+<br>
+//Saves new ElementItem to the Database<br>
+<br>
+bool Dependency::save(Key key, ElementItem elem)<br>
+{<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+	std::vector&lt;ElementItem&gt; vec;<br>
+	vec.push_back(elem);<br>
+<br>
+<br>
+	if (store.find(key) != store.end())<br>
+		return false;<br>
+	store[key] = vec;<br>
+	return true;<br>
+}</div><br>
+<br>
+<br>
+<br>
+//Returns the ElementItem of a certain key in the Database<br>
+<br>
+std::vector&lt;ElementItem&gt; Dependency::value(Key key)<br>
+{<button id ="994"onclick="myFunction6();toggleText6(this.id); ">-</button><div id = "myDIV6"><br>
+	ElementItem elem;<br>
+	std::vector&lt;ElementItem&gt; vec;<br>
+	if (store.find(key) == store.end())<br>
+	{<br>
+				return vec;<br>
+<br>
+	}<br>
+		return store[key];<br>
+<br>
+}</div><br>
+<br>
+//Returns count of the DataBase<br>
+<br>
+size_t Dependency::count()<br>
+{<button id ="993"onclick="myFunction7();toggleText7(this.id); ">-</button><div id = "myDIV7"><br>
+	return store.size();<br>
+}</div><br>
+<br>
+//Displays all keys in the Database<br>
+<br>
+void Dependency::showKeys(Keys list)<br>
+{<button id ="992"onclick="myFunction8();toggleText8(this.id); ">-</button><div id = "myDIV8"><br>
+	for (Key k : list)<br>
+	{<br>
+		std::cout &lt;&lt; "\t" &lt;&lt; k &lt;&lt; "\n";<br>
+	}<br>
+	return;<br>
+}</div><br>
+<br>
+<br>
+<br>
+<br>
+<//pre><//body><//html>

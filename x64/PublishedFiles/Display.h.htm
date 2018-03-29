@@ -1,0 +1,123 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "Display.h.htm">Display.h - </a><br><a href = "FileSystem.h.htm">FileSystem.h - </a><br><a href = "GrammarHelpers.cpp.htm">GrammarHelpers.cpp - </a><br><a href = "Logger.h.htm">Logger.h - </a><br><a href = "NoSqlDataBaseApp.h.htm">NoSqlDataBaseApp.h - </a><br><a href = "Test2.cpp.htm">Test2.cpp - </a><br><a href = "TypeTable.h.htm">TypeTable.h - </a><br><br><br>#pragma once<br>
+/////////////////////////////////////////////////////////////////////<br>
+//  Display.h -  File to print all requirements                    //<br>
+//  ver 1.0                                                        //<br>
+//                                                                 //<br>
+//  Language:      Visual C++ 2008, SP1                            //<br>
+//  Platform:      Dell Inspiron, Windows 8.1			           //<br>
+//  Application:   CodeAnalyzerEx - CIS 687 Project 3              //<br>
+//  Author:        Nishanth Chandrasekaran SUID:215242434		   //<br>
+/////////////////////////////////////////////////////////////////////<br>
+/*<br>
+Module Operations:<br>
+==================<br>
+This module defines three display functions<br>
+Public Interface:<br>
+=================<br>
+TypeAnalysisDisplay<br>
+DependencyAnalysis<br>
+SCCAnalysis<br>
+Build Process:<br>
+==============<br>
+Required files<br>
+-StrongComponenent<br>
+-Dependency<br>
+-TypeTable<br>
+-Utilities<br>
+Maintenance History:<br>
+====================<br>
+ver 2.0 : 6 April 2017<br>
+- first release<br>
+*/<br>
+<br>
+#include &lt;sstream&gt;<br>
+#include &lt;string&gt;<br>
+#include &lt;vector&gt;<br>
+#include &lt;map&gt;<br>
+#include &lt;unordered_map&gt;<br>
+#include &lt;functional&gt;<br>
+#include &lt;algorithm&gt;<br>
+#include &lt;exception&gt;<br>
+#include &lt;iomanip&gt;<br>
+#include &lt;chrono&gt;<br>
+#include &lt;ctime&gt;<br>
+#include "../Analyzer/Executive.h"<br>
+#include "../Parser/Parser.h"<br>
+#include "../FileSystem/FileSystem.h"<br>
+#include "../FileMgr/FileMgr.h"<br>
+#include "../Parser/ActionsAndRules.h"<br>
+#include "../Parser/ConfigureParser.h"<br>
+#include "../AbstractSyntaxTree/AbstrSynTree.h"<br>
+#include "../Logger/Logger.h"<br>
+#include "../Utilities/Utilities.h"<br>
+#include "../TypeTable/TypeTable.h"<br>
+#include "../Dependency/Dependency.h"<br>
+#include "../StrongComponent/StrongComponent.h"<br>
+#include "../StrongComponent/StrongComponent.h"<br>
+#include "../Persistance/Persistance.h"<br>
+<br>
+using Key = std::string;<br>
+using Keys = std::vector&lt;Key&gt;;<br>
+using Rslt = Logging::StaticLogger&lt;0&gt;;  <br>
+using Demo = Logging::StaticLogger&lt;1&gt;;  <br>
+using Dbug = Logging::StaticLogger&lt;2&gt;; <br>
+using Path = std::string;<br>
+using File = std::string;<br>
+using Files = std::vector&lt;File&gt;;<br>
+using Pattern = std::string;<br>
+using Ext = std::string;<br>
+using FileMap = std::unordered_map&lt;Pattern, Files&gt;;<br>
+<br>
+using namespace CodeAnalysis;<br>
+<br>
+//Function to print TypeTable<br>
+void TypeAnalysisDisplay(NoSqlDb db)<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+    TypeAnalysis ta;<br>
+	ta.doTypeAnalysis(db);<br>
+    Keys keys = db.keys();<br>
+	for (std::string key : keys)<br>
+	{<br>
+	for (Element elem : db.value(key))<br>
+		{<br>
+			std::cout &lt;&lt; "\n  " &lt;&lt; key &lt;&lt; ":   ";<br>
+			std::cout &lt;&lt; elem.show();<br>
+	}<br>
+	}<br>
+<br>
+<br>
+}</div><br>
+//Function to print Dependency Table<br>
+void DependencyAnalysis(Dependency dbnew)<br>
+{<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+	Keys k = dbnew.keys();<br>
+	for (std::string key : k)<br>
+	{<br>
+<br>
+<br>
+		for (auto elem : dbnew.value(key))<br>
+		{<br>
+			std::cout &lt;&lt; "\n  " &lt;&lt; key &lt;&lt; ":   ";<br>
+			std::cout &lt;&lt; elem.showelement();<br>
+		}<br>
+<br>
+	}<br>
+}</div><br>
+<br>
+<br>
+//Function to print SCC<br>
+void SCCAnalysis(std::vector&lt;vector&lt;int&gt;&gt; revfileMap, std::unordered_map&lt;int, File&gt; rev)<br>
+{<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+for (std::vector&lt;int&gt; r : revfileMap)<br>
+	{<br>
+		for (int a : r)<br>
+		{<br>
+			cout &lt;&lt; " " &lt;&lt; rev[a];<br>
+<br>
+		}<br>
+		cout &lt;&lt; "\n";<br>
+	}<br>
+}</div><br>
+<br>
+<br>
+<//pre><//body><//html>

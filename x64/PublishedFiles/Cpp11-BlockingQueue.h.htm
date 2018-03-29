@@ -1,0 +1,166 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "Cpp11-BlockingQueue.h.htm">Cpp11-BlockingQueue.h - </a><br><br><br>#ifndef CPP11_BLOCKINGQUEUE_H<br>
+#define CPP11_BLOCKINGQUEUE_H<br>
+///////////////////////////////////////////////////////////////<br>
+// Cpp11-BlockingQueue.h - Thread-safe Blocking Queue        //<br>
+// ver 1.4                                                   //<br>
+// Jim Fawcett, CSE687 - Object Oriented Design, Spring 2015 //<br>
+///////////////////////////////////////////////////////////////<br>
+/*<br>
+ * Package Operations:<br>
+ * -------------------<br>
+ * This package contains one thread-safe class: BlockingQueue&lt;T&gt;.<br>
+ * Its purpose is to support sending messages between threads.<br>
+ * It is implemented using C++11 threading constructs including <br>
+ * std::condition_variable and std::mutex.  The underlying storage<br>
+ * is provided by the non-thread-safe std::queue&lt;T&gt;.<br>
+ *<br>
+ * Required Files:<br>
+ * ---------------<br>
+ * Cpp11-BlockingQueue.h<br>
+ *<br>
+ * Build Process:<br>
+ * --------------<br>
+ * devenv Cpp11-BlockingQueue.sln /rebuild debug<br>
+ *<br>
+ * Maintenance History:<br>
+ * --------------------<br>
+ * ver 1.4 : 29 Jul 2016<br>
+ * - wrapped with namespace Async<br>
+ * ver 1.3 : 04 Mar 2016<br>
+ * - changed behavior of front() to throw exception<br>
+ *   on empty queue.<br>
+ * - added comment about std::unique_lock in deQ()<br>
+ * ver 1.2 : 27 Feb 2016<br>
+ * - added front();<br>
+ * - added move ctor and move assignment<br>
+ * - deleted copy ctor and copy assignment<br>
+ * ver 1.1 : 26 Jan 2015<br>
+ * - added copy constructor and assignment operator<br>
+ * ver 1.0 : 03 Mar 2014<br>
+ * - first release<br>
+ *<br>
+ */<br>
+<br>
+#include &lt;condition_variable&gt;<br>
+#include &lt;mutex&gt;<br>
+#include &lt;thread&gt;<br>
+#include &lt;queue&gt;<br>
+#include &lt;string&gt;<br>
+#include &lt;iostream&gt;<br>
+#include &lt;sstream&gt;<br>
+<br>
+namespace Async<br>
+{<br>
+  template &lt;typename T&gt;<br>
+  class BlockingQueue {<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+  public:<br>
+    BlockingQueue() {}<br>
+    BlockingQueue(BlockingQueue&lt;T&gt;&& bq);<br>
+    BlockingQueue&lt;T&gt;& operator=(BlockingQueue&lt;T&gt;&& bq);<br>
+    BlockingQueue(const BlockingQueue&lt;T&gt;&) = delete;<br>
+    BlockingQueue&lt;T&gt;& operator=(const BlockingQueue&lt;T&gt;&) = delete;<br>
+    T deQ();<br>
+    void enQ(const T& t);<br>
+    T& front();<br>
+    void clear();<br>
+    size_t size();<br>
+  private:<br>
+    std::queue&lt;T&gt; q_;<br>
+    std::mutex mtx_;<br>
+    std::condition_variable cv_;<br>
+  }</div>;<br>
+  //----&lt; move constructor &gt;---------------------------------------------<br>
+<br>
+  template&lt;typename T&gt;<br>
+  BlockingQueue&lt;T&gt;::BlockingQueue(BlockingQueue&lt;T&gt;&& bq) // need to lock so can't initialize<br>
+  {<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+    std::lock_guard&lt;std::mutex&gt; l(mtx_);<br>
+    q_ = bq.q_;<br>
+    while (bq.q_.size() &gt; 0)  // clear bq<br>
+      bq.q_.pop();<br>
+    /* can't copy  or move mutex or condition variable, so use default members */<br>
+  }</div><br>
+  //----&lt; move assignment &gt;----------------------------------------------<br>
+<br>
+  template&lt;typename T&gt;<br>
+  BlockingQueue&lt;T&gt;& BlockingQueue&lt;T&gt;::operator=(BlockingQueue&lt;T&gt;&& bq)<br>
+  {<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+    if (this == &bq) return *this;<br>
+    std::lock_guard&lt;std::mutex&gt; l(mtx_);<br>
+    q_ = bq.q_;<br>
+    while (bq.q_.size() &gt; 0)  // clear bq<br>
+      bq.q_.pop();<br>
+    /* can't move assign mutex or condition variable so use target's */<br>
+    return *this;<br>
+  }</div><br>
+  //----&lt; remove element from front of queue &gt;---------------------------<br>
+<br>
+  template&lt;typename T&gt;<br>
+  T BlockingQueue&lt;T&gt;::deQ()<br>
+  {<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+    std::unique_lock&lt;std::mutex&gt; l(mtx_);<br>
+    /*<br>
+       This lock type is required for use with condition variables.<br>
+       The operating system needs to lock and unlock the mutex:<br>
+       - when wait is called, below, the OS suspends waiting thread<br>
+         and releases lock.<br>
+       - when notify is called in enQ() the OS relocks the mutex,<br>
+         resumes the waiting thread and sets the condition variable to<br>
+         signaled state.<br>
+       std::lock_quard does not have public lock and unlock functions.<br>
+     */<br>
+    if (q_.size() &gt; 0)<br>
+    {<br>
+      T temp = q_.front();<br>
+      q_.pop();<br>
+      return temp;<br>
+    }<br>
+    // may have spurious returns so loop on !condition<br>
+<br>
+    while (q_.size() == 0)<br>
+      cv_.wait(l, [this]() { return q_.size() &gt; 0; });<br>
+    T temp = q_.front();<br>
+    q_.pop();<br>
+    return temp;<br>
+  }</div><br>
+  //----&lt; push element onto back of queue &gt;------------------------------<br>
+<br>
+  template&lt;typename T&gt;<br>
+  void BlockingQueue&lt;T&gt;::enQ(const T& t)<br>
+  {<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+    {<br>
+      std::unique_lock&lt;std::mutex&gt; l(mtx_);<br>
+      q_.push(t);<br>
+    }<br>
+    cv_.notify_one();<br>
+  }</div><br>
+  //----&lt; peek at next item to be popped &gt;-------------------------------<br>
+<br>
+  template &lt;typename T&gt;<br>
+  T& BlockingQueue&lt;T&gt;::front()<br>
+  {<button id ="994"onclick="myFunction6();toggleText6(this.id); ">-</button><div id = "myDIV6"><br>
+    std::lock_guard&lt;std::mutex&gt; l(mtx_);<br>
+    if (q_.size() &gt; 0)<br>
+      return q_.front();<br>
+    throw std::exception("attempt to deQue empty queue");<br>
+  }</div><br>
+  //----&lt; remove all elements from queue &gt;-------------------------------<br>
+<br>
+  template &lt;typename T&gt;<br>
+  void BlockingQueue&lt;T&gt;::clear()<br>
+  {<button id ="993"onclick="myFunction7();toggleText7(this.id); ">-</button><div id = "myDIV7"><br>
+    std::lock_guard&lt;std::mutex&gt; l(mtx_);<br>
+    while (q_.size() &gt; 0)<br>
+      q_.pop();<br>
+  }</div><br>
+  //----&lt; return number of elements in queue &gt;---------------------------<br>
+<br>
+  template&lt;typename T&gt;<br>
+  size_t BlockingQueue&lt;T&gt;::size()<br>
+  {<button id ="992"onclick="myFunction8();toggleText8(this.id); ">-</button><div id = "myDIV8"><br>
+    std::lock_guard&lt;std::mutex&gt; l(mtx_);<br>
+    return q_.size();<br>
+  }</div><br>
+}<br>
+#endif<br>
+<//pre><//body><//html>

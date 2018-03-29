@@ -1,0 +1,64 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "GrammarHelpers.cpp.htm">GrammarHelpers.cpp - </a><br><a href = "StrHelper.h.htm">StrHelper.h - </a><br><a href = "itokcollection.h.htm">itokcollection.h - </a><br><br><br>#ifndef ITOKCOLLECTION_H<br>
+#define ITOKCOLLECTION_H<br>
+/////////////////////////////////////////////////////////////////////<br>
+//  ITokCollection.h - package for the ITokCollection interface    //<br>
+//  ver 1.4                                                        //<br>
+//  Language:      Visual C++ 2008, SP1                            //<br>
+//  Platform:      Dell XPS 8900, Windows 10                       //<br>
+//  Application:   Code analysis tools                             //<br>
+//  Author:        Jim Fawcett, CST 4-187, Syracuse University     //<br>
+//                 (315) 443-3948, jfawcett@twcny.rr.com           //<br>
+/////////////////////////////////////////////////////////////////////<br>
+/*<br>
+  Module Purpose:<br>
+  ===============<br>
+  ITokCollection is an interface that supports substitution of different<br>
+  types of scanners for parsing.  In this solution, we illustrate that<br>
+  by binding two different types of collections, SemiExp and XmlParts,<br>
+  to this interface.  This is illustrated in the test stubs for the<br>
+  SemiExpression and XmlElementParts packages.<br>
+<br>
+  Maintenance History:<br>
+  ====================<br>
+  ver 1.4 : 28 Aug 2016<br>
+  - added default parameter to trim for comment removal<br>
+  ver 1.3 : 25 Aug 2016<br>
+  - added begin(), end(), clone(const SemiExp&), and iterator<br>
+  ver 1.2 : 15 Feb 2016<br>
+  - removed merge, added non-const operator[] overload<br>
+  ver 1.1 : 02 Jun 11<br>
+  - added merge, remove overload, and default param in get<br>
+  ver 1.0 : 17 Jan 09<br>
+  - first release<br>
+*/<br>
+#include &lt;string&gt; <br>
+#include &lt;vector&gt;<br>
+<br>
+namespace Scanner<br>
+{<br>
+  struct ITokCollection<br>
+  {<br>
+    using iterator = std::vector&lt;std::string&gt;::iterator;<br>
+    virtual iterator begin() = 0;<br>
+    virtual iterator end() = 0;<br>
+    virtual bool get(bool clear = true) = 0;<br>
+    virtual ITokCollection* clone() const = 0;<br>
+    virtual void clone(const ITokCollection&, size_t offSet = 0) = 0;<br>
+    virtual size_t length() const = 0;<br>
+    virtual std::string& operator[](size_t n) = 0;<br>
+    virtual std::string operator[](size_t n) const = 0;<br>
+    virtual size_t find(const std::string& tok, size_t offSet = 0) const = 0;<br>
+    virtual void push_back(const std::string& tok) = 0;<br>
+    virtual bool remove(const std::string& tok) = 0;<br>
+    virtual bool remove(size_t i) = 0;<br>
+    virtual void toLower() = 0;<br>
+    virtual void trimFront() = 0;<br>
+    virtual void trim(bool removeComments = true) = 0;<br>
+    virtual void clear() = 0;<br>
+    virtual std::string show(bool showNewLines = false) const = 0;<br>
+    virtual bool isComment(const std::string& tok) const = 0;<br>
+    virtual ~ITokCollection() {};<br>
+  };<br>
+}<br>
+#endif<br>
+<//pre><//body><//html>

@@ -1,0 +1,211 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><br><br><br>
+#pragma once<br>
+#include &lt;unordered_map&gt;<br>
+#include &lt;string&gt;<br>
+#include &lt;sstream&gt;<br>
+#include &lt;vector&gt;<br>
+#include &lt;iomanip&gt;<br>
+#include &lt;iostream&gt;<br>
+#include &lt;ctime&gt;<br>
+#include "../CppProperties/CppProperties.h"<br>
+#include "../Parser/ActionsAndRules.h"<br>
+#include "../Parser/ActionsAndRules.h"<br>
+#include &lt;iostream&gt;<br>
+#include &lt;functional&gt;<br>
+<br>
+<br>
+#pragma warning (disable : 4101)  // disable warning re unused variable x, below<br>
+<br>
+/*<br>
+<br>
+namespace CodeAnalysis<br>
+{<br>
+	<br>
+	class TypeAnalysis<br>
+	{<br>
+	public:<br>
+		using SPtr = std::shared_ptr&lt;ASTNode*&gt;;<br>
+<br>
+		TypeAnalysis();<br>
+		void doTypeAnalysisysis();<br>
+	private:<br>
+		void DFS(ASTNode* pNode);<br>
+		AbstrSynTree& ASTref_;<br>
+		ScopeStack&lt;ASTNode*&gt; scopeStack_;<br>
+		Scanner::Toker& toker_;<br>
+	};<br>
+<br>
+	inline TypeAnalysis::TypeAnalysis() :<br>
+		ASTref_(Repository::getInstance()-&gt;AST()),<br>
+		scopeStack_(Repository::getInstance()-&gt;scopeStack()),<br>
+		toker_(*(Repository::getInstance()-&gt;Toker()))<br>
+	{<br>
+		std::function&lt;void()&gt; test = [] { int x; };  // This is here to test detection of lambdas.<br>
+	}                                              // It doesn't do anything useful for dep anal.<br>
+<br>
+	inline bool doDisplay(ASTNode* pNode)<br>
+	{<br>
+		static std::string toDisplay[] = {<br>
+			"function", "lambda", "class", "struct", "enum", "alias", "typedef"<br>
+		};<br>
+		for (std::string type : toDisplay)<br>
+		{<br>
+			if (pNode-&gt;type_ == type)<br>
+				return true;<br>
+		}<br>
+		return false;<br>
+	}<br>
+	inline void TypeAnalysis::DFS(ASTNode* pNode)<br>
+	{<br>
+		static std::string path = "";<br>
+		if (pNode-&gt;path_ != path)<br>
+		{<br>
+			std::cout &lt;&lt; "\n    -- " &lt;&lt; pNode-&gt;path_ &lt;&lt; "\\" &lt;&lt; pNode-&gt;package_;<br>
+			path = pNode-&gt;path_;<br>
+		}<br>
+		if (doDisplay(pNode))<br>
+		{<br>
+			std::cout &lt;&lt; "\n  " &lt;&lt; pNode-&gt;name_;<br>
+			std::cout &lt;&lt; ", " &lt;&lt; pNode-&gt;type_;<br>
+		}<br>
+		for (auto pChild : pNode-&gt;children_)<br>
+			DFS(pChild);<br>
+	}<br>
+<br>
+	inline void TypeAnalysis::doTypeAnalysisysis()<br>
+	{<br>
+		std::cout &lt;&lt; "\n  starting type analysis:\n";<br>
+		std::cout &lt;&lt; "\n  scanning AST and displaying important things:";<br>
+		std::cout &lt;&lt; "\n -----------------------------------------------";<br>
+		ASTNode* pRoot = ASTref_.root();<br>
+		DFS(pRoot);<br>
+		std::cout &lt;&lt; "\n\n  the rest is for you to complete\n";<br>
+	}<br>
+<br>
+<br>
+<br>
+<br>
+	class Element<br>
+	{<br>
+	public:<br>
+		using Type = std::string;<br>
+		using Namespace = std::string;<br>
+		using Filename = std::string;<br>
+<br>
+		Property&lt;Type&gt; tname;            // metadata<br>
+		Property&lt;Namespace&gt; nspace;    // metadata<br>
+		Property&lt;Filename&gt; filename;    // metadata<br>
+<br>
+		std::string show();<br>
+	};<br>
+<br>
+<br>
+	std::string Element::show()<br>
+	{<br>
+		// show children when you've implemented them<br>
+<br>
+		std::ostringstream out;<br>
+		out.setf(std::ios::adjustfield, std::ios::left);<br>
+		out &lt;&lt; "\n    " &lt;&lt; std::setw(8) &lt;&lt; "name" &lt;&lt; " : " &lt;&lt; tname;<br>
+		out &lt;&lt; "\n    " &lt;&lt; std::setw(8) &lt;&lt; "category" &lt;&lt; " : " &lt;&lt; nspace;<br>
+		out &lt;&lt; "\n    " &lt;&lt; std::setw(8) &lt;&lt; "Description" &lt;&lt; " : " &lt;&lt; filename;<br>
+<br>
+		/*<br>
+		std::vector&lt;std::string&gt; c = childrenList;<br>
+		for (Key k : c)<br>
+		{<br>
+<br>
+			out &lt;&lt; "\t" &lt;&lt; k;<br>
+<br>
+		}<br>
+<br>
+<br>
+		<br>
+		out &lt;&lt; "\n";<br>
+		return out.str();<br>
+<br>
+		<br>
+	}<br>
+<br>
+<br>
+	class NoSqlDb<br>
+	{<br>
+	public:<br>
+		using Key = std::string;<br>
+		using Keys = std::vector&lt;Key&gt;;<br>
+		Keys keys();<br>
+		bool save(Key key, Element elem);<br>
+		Element value(Key key);<br>
+		size_t count();<br>
+<br>
+<br>
+		Element NoSqlDb::makeCopyElement(Key key);<br>
+		void NoSqlDb::showKeys(Keys list);<br>
+	private:<br>
+		using Item = std::pair&lt;Key, Element&gt;;<br>
+		std::unordered_map&lt;Key, Element&gt; store;<br>
+	};<br>
+<br>
+	//Returns the keys of the DataBase<br>
+<br>
+	typename NoSqlDb::Keys NoSqlDb::keys()<br>
+	{<br>
+		Keys keys;<br>
+		for (Item item : store)<br>
+		{<br>
+			keys.push_back(item.first);<br>
+		}<br>
+		return keys;<br>
+	}<br>
+<br>
+<br>
+	//Saves new element to the Database<br>
+<br>
+	bool NoSqlDb::save(Key key, Element elem)<br>
+	{<br>
+<br>
+<br>
+		if (store.find(key) != store.end())<br>
+			return false;<br>
+		store[key] = elem;<br>
+		return true;<br>
+	}<br>
+<br>
+<br>
+<br>
+<br>
+	//Returns the Element of a certain key in the Database<br>
+<br>
+	Element NoSqlDb::value(Key key)<br>
+	{<br>
+		if (store.find(key) != store.end())<br>
+			return store[key];<br>
+		return Element();<br>
+	}<br>
+<br>
+	//Returns count of the DataBase<br>
+<br>
+	size_t NoSqlDb::count()<br>
+	{<br>
+		return store.size();<br>
+	}<br>
+<br>
+<br>
+<br>
+	//Displays all keys in the Database<br>
+<br>
+	void NoSqlDb::showKeys(Keys list)<br>
+	{<br>
+		for (Key k : list)<br>
+		{<br>
+			std::cout &lt;&lt; "\t" &lt;&lt; k &lt;&lt; "\n";<br>
+		}<br>
+		return;<br>
+	}<br>
+<br>
+*/<br>
+<br>
+<br>
+<br>
+<br>
+<//pre><//body><//html>

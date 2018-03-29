@@ -1,0 +1,214 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "FileSystem.h.htm">FileSystem.h - </a><br><a href = "NoSqlDataBaseApp.h.htm">NoSqlDataBaseApp.h - </a><br><a href = "Publisher.h.htm">Publisher.h - </a><br><a href = "Test2.cpp.htm">Test2.cpp - </a><br><a href = "Utilities.h.htm">Utilities.h - </a><br><br><br>﻿#pragma once<br>
+/////////////////////////////////////////////////////////////////////<br>
+//  NoSqlDataBaseApp.h -  Class for Publisher                      //<br>
+//  ver 1.0                                                        //<br>
+//                                                                 //<br>
+//  Language:      Visual C++ 2008, SP1                            //<br>
+//  Platform:      Dell Inspiron, Windows 8.1			           //<br>
+//  Application:   CodeAnalyzerEx - CIS 687 Project 3              //<br>
+//  Author:        Nishanth Chandrasekaran SUID:215242434		   //<br>
+/////////////////////////////////////////////////////////////////////<br>
+/*<br>
+Module Operations:<br>
+==================<br>
+This module defines a Dependency class<br>
+* - The functions defined in this class are used for,<br>
+&gt; Storing Dependency relationships<br>
+Public Interface:<br>
+=================<br>
+Publisher Class &gt; ---- &gt;    nchildrenList;  void printDependency;void closeBrace;void openBrace<br>
+Build Process:<br>
+==============<br>
+Required files<br>
+-TypeTable<br>
+-Utilities<br>
+-Publisher<br>
+Maintenance History:<br>
+====================<br>
+ver 2.0 : 6 April 2017<br>
+- first release<br>
+*/<br>
+<br>
+#include&lt;fstream&gt;<br>
+#include&lt;iostream&gt;<br>
+#include&lt;vector&gt;<br>
+#include &lt;unordered_map&gt;<br>
+#include &lt;string&gt;<br>
+#include &lt;sstream&gt;<br>
+#include &lt;vector&gt;<br>
+#include &lt;iomanip&gt;<br>
+#include &lt;iostream&gt;<br>
+#include &lt;ctime&gt;<br>
+#include "../Tokenizer/Tokenizer.h"<br>
+#include "../NoSqlDataBaseApp/NoSqlDatabaseApp.h"<br>
+#include "../TypeTable/TypeTable.h"<br>
+#include "../Utilities/Utilities.h"<br>
+#include "../Publisher/Publisher.h"<br>
+using Key = std::string;<br>
+using Keys = std::vector&lt;std::string&gt;;<br>
+using File = std::string;<br>
+using Files = std::vector&lt;File&gt;;<br>
+using Pattern = std::string;<br>
+using Ext = std::string;<br>
+using FileMap = std::unordered_map&lt;Pattern, Files&gt;;<br>
+using Helper = Utilities::StringHelper;<br>
+using databasetable = std::unordered_map&lt;std::string, std::vector&lt;std::unordered_map&lt;std::string, std::string&gt;&gt;&gt;;<br>
+using File = std::string;<br>
+using Files = std::vector&lt;File&gt;;<br>
+<br>
+/////////////////////////////////////////////////////////////////////<br>
+// Publisher class represents a all packages in an HTML Pages<br>
+// -Replace all characters and Display only functions and classes<br>
+// - it needs to store child data<br>
+//<br>
+class Publisher<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+<br>
+private:<br>
+	std::unordered_map&lt;File, std::vector&lt;size_t&gt;&gt; startFile;<br>
+	std::unordered_map&lt;File, std::vector&lt;size_t&gt;&gt; endFile;<br>
+public:<br>
+<br>
+	void publish(File file, ElementItem elem, std::unordered_map&lt;std::string, std::unordered_map&lt;size_t,size_t&gt;&gt; cob, std::ofstream& jssout);<br>
+	std::string Publisher::charReplace(std::string str);<br>
+<br>
+<br>
+	void printDependency(ElementItem elem, std::ofstream& out);<br>
+	void closeBrace(std::ofstream& out);<br>
+	void openBrace(std::ofstream& out, int i , int a, std::ofstream& jssout);<br>
+<br>
+}</div>;<br>
+<br>
+<br>
+//Function to Publish files as HTML Files<br>
+void Publisher::publish(File file1, ElementItem elem, std::unordered_map&lt;std::string, std::unordered_map&lt;size_t, size_t&gt;&gt; cob, std::ofstream& jssout)<br>
+{std::unordered_map&lt;size_t, size_t&gt; localMap;<br>
+std::string file = FileSystem::Path::getName(file1);<br>
+std::string path = FileSystem::Path::getPath(file1);<br>
+std::vector&lt;size_t&gt; vclose;<br>
+for (auto kv : cob[file])<br>
+{<br>
+localMap[kv.first] = kv.second;<br>
+vclose.push_back(kv.second);<br>
+}<br>
+File newfile = "../PublishedFiles/" + file + ".htm";<br>
+std::ofstream out(newfile);<br>
+if (!out.is_open())<br>
+{std::cout &lt;&lt; "failed to open file " &lt;&lt; newfile; exit(6);<br>
+}std::string line, alLine;<br>
+std::ifstream in(file1);<br>
+size_t linecount = 1;<br>
+int i = 1,a =999;<br>
+if (!in.is_open())<br>
+	std::cout &lt;&lt; "failed to open file ";<br>
+	else<br>
+	{char c;<br>
+		out &lt;&lt; "&lt;html&gt;&lt;head&gt;&lt;link rel=\"" &lt;&lt; "stylesheet\"" &lt;&lt; " type = \"text/css\"" &lt;&lt; "  href=\""&lt;&lt;"Publisher.css\"/&gt;"&lt;&lt;"&lt;script type=\"text/javascript\" src = \"jssPublisher.js\"&gt;&lt;/script&gt;&lt;/head&gt;&lt;body&gt;&lt;pre&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;";<br>
+        printDependency(elem, out);<br>
+        out &lt;&lt; "&lt;br&gt;&lt;br&gt;";<br>
+        while (std::getline(in, alLine))<br>
+		{<br>
+		alLine = charReplace(alLine);<br>
+        for (char& line : alLine)<br>
+        {<br>
+       if ((std::find(vclose.begin(), vclose.end(), linecount) != vclose.end()) && line == '}')<br>
+        closeBrace(out);<br>
+        else if ((localMap.find(linecount) != localMap.end()) && line == '{')<br>
+       {openBrace(out, i, a,jssout);<br>
+		  i++;<br>
+		  a--;<br>
+	   }<br>
+        else <br>
+            out &lt;&lt; line;<br>
+        } linecount++;<br>
+         out &lt;&lt; "&lt;br&gt;";<br>
+		 out &lt;&lt; "\n";<br>
+         }<br>
+		 } out &lt;&lt; "&lt;//pre&gt;&lt;//body&gt;&lt;//html&gt;";<br>
+		in.close();<br>
+		out.close();}</div><br>
+<br>
+//Function to print dependencies in the HTML File<br>
+	void Publisher::printDependency(ElementItem elem, std::ofstream& out)<br>
+	{<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+		for (File filename : elem.childrenList)<br>
+		{<br>
+			std::string name = FileSystem::Path::getName(filename);<br>
+<br>
+			std::string finalpath = name + ".htm";<br>
+			out &lt;&lt; "&lt;a href = \"" &lt;&lt; finalpath &lt;&lt; "\"" &lt;&lt; "&gt;" &lt;&lt; name &lt;&lt; " - " &lt;&lt; "&lt;/a&gt;&lt;br&gt;";<br>
+<br>
+		}<br>
+<br>
+}</div><br>
+<br>
+	//Function to perform functions when close brace is detected<br>
+	void Publisher::closeBrace(std::ofstream& out)<br>
+	{<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+<br>
+		out &lt;&lt; "}";<br>
+<br>
+		out &lt;&lt; "&lt;/div&gt;";<br>
+<br>
+<br>
+	}</div><br>
+<br>
+		//Function to perform functions when close brace is detected<br>
+ void Publisher::openBrace(std::ofstream& out, int i, int a, std::ofstream& jssout)<br>
+	{<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+        out &lt;&lt; "{";<br>
+        out &lt;&lt; "&lt;button id =\"" &lt;&lt; a &lt;&lt; "\"" &lt;&lt; "onclick=\"myFunction";<br>
+        out &lt;&lt; i;<br>
+		out &lt;&lt; "();";<br>
+		out &lt;&lt; "toggleText" &lt;&lt; i &lt;&lt; "(this." &lt;&lt; "id" &lt;&lt; "); " &lt;&lt; "\"&gt;-&lt;/button&gt;";<br>
+        jssout &lt;&lt; "function myFunction";<br>
+		jssout &lt;&lt; i;<br>
+		jssout &lt;&lt; "() {";<br>
+		jssout &lt;&lt; "var x = document.getElementById('myDIV";<br>
+		jssout &lt;&lt; i;<br>
+		jssout &lt;&lt; "');";<br>
+        jssout &lt;&lt; "if (x.style.display == 'none') {";<br>
+		jssout &lt;&lt; "x.style.display = 'block';";<br>
+		jssout &lt;&lt; "}";<br>
+		jssout &lt;&lt; "else {";<br>
+		jssout &lt;&lt; "x.style.display = 'none';";<br>
+        jssout &lt;&lt; "}}";<br>
+		jssout &lt;&lt; "function toggleText" &lt;&lt; i &lt;&lt; "(" &lt;&lt; "buttonid" &lt;&lt; ") {var el = document.getElementById(" &lt;&lt; "buttonid" &lt;&lt; ");if (el.firstChild.data == \"-\"){el.firstChild.data = \"+\";}else{el.firstChild.data = \"-\";}}";<br>
+		out &lt;&lt; "&lt;div id = \"myDIV";<br>
+		out &lt;&lt; i;<br>
+		out &lt;&lt; "\"&gt;";<br>
+}</div><br>
+<br>
+<br>
+<br>
+	<br>
+<br>
+<br>
+<br>
+<br>
+ //Function to replace characters in a line<br>
+std::string Publisher::charReplace(std::string str)<br>
+{<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+<br>
+	std::string returnString;<br>
+<br>
+	for (char& c : str)<br>
+	{<br>
+		if (c == '&lt;')<br>
+			returnString = returnString + "&lt;";<br>
+		else if (c == '&gt;')<br>
+			returnString = returnString + "&gt;";<br>
+		else<br>
+			returnString = returnString + c;<br>
+<br>
+<br>
+	}<br>
+<br>
+	return returnString;<br>
+<br>
+}</div><br>
+<br>
+<br>
+<br>
+<br>
+<//pre><//body><//html>

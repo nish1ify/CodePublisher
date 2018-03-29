@@ -1,0 +1,197 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "GrammarHelpers.cpp.htm">GrammarHelpers.cpp - </a><br><a href = "Logger.h.htm">Logger.h - </a><br><a href = "OtherSource.h.htm">OtherSource.h - </a><br><a href = "ScopeStack.cpp.htm">ScopeStack.cpp - </a><br><a href = "ScopeStack.h.htm">ScopeStack.h - </a><br><a href = "Test1.cpp.htm">Test1.cpp - </a><br><a href = "Utilities.h.htm">Utilities.h - </a><br><br><br>#ifndef SCOPESTACK_H<br>
+#define SCOPESTACK_H<br>
+/////////////////////////////////////////////////////////////////////////////<br>
+// ScopeStack.h - implements template stack holding specified element type //<br>
+// ver 2.2                                                                 //<br>
+// Language:      Visual C++ 2010, SP1                                     //<br>
+// Platform:      Dell Precision T7400, Win 7 Pro SP1                      //<br>
+// Application:   Code Analysis Research                                   //<br>
+// Author:        Jim Fawcett, CST 4-187, Syracuse University              //<br>
+//                (315) 443-3948, jfawcett@twcny.rr.com                    //<br>
+/////////////////////////////////////////////////////////////////////////////<br>
+/*<br>
+  Package Operations:<br>
+  ===================<br>
+  This package contains one class: ScopeStack&lt;element&gt;.  The element type<br>
+  is an application specific type designed to hold whatever information you<br>
+  need to stack.<br>
+<br>
+  Throws std::exception if stack is popped or peeked when empty.<br>
+<br>
+  Public Interface:<br>
+  =================<br>
+  ScopeStack&lt;element&gt; stack;<br>
+  // define some element type<br>
+  element elem;<br>
+  stack.push(elem);<br>
+  element popped = stack.pop();<br>
+<br>
+  Required Files:<br>
+  ===============<br>
+  ScopeStack.h, ScopeStack.cpp<br>
+<br>
+  Build Command:<br>
+  ==============<br>
+  devenv ScopeStack.sln /rebuild debug<br>
+<br>
+  Maintenance History:<br>
+  ====================<br>
+  ver 2.2 : 29 Oct 2016<br>
+  - added throw when popping or peeking empty stack<br>
+  ver 2.1 : 02 Jun 2011<br>
+  - changed ScopeStack type to single template argument intended to be<br>
+    an application specific type (usually a struct that holds whatever<br>
+    is needed)<br>
+  ver 2.0 : 02 Feb 2011<br>
+  - fixed bug in pop() method found by Drumil Bhattad<br>
+  ver 1.0 : 31 Jan 2011<br>
+  - first release<br>
+*/<br>
+#include &lt;list&gt;<br>
+#include "../Logger/Logger.h"<br>
+#include "../Utilities/Utilities.h"<br>
+<br>
+// element is a application specific type.  It must provide a function:<br>
+// std::string show() that returns a string display of its parts. see<br>
+// test stub for an example.<br>
+<br>
+namespace CodeAnalysis<br>
+{<br>
+  template&lt;typename element&gt;<br>
+  class ScopeStack {<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+  public:<br>
+    using Rslt = Logging::StaticLogger&lt;0&gt;;    // show program results<br>
+    using Demo = Logging::StaticLogger&lt;1&gt;;    // show demonstration outputs<br>
+    using Dbug = Logging::StaticLogger&lt;2&gt;;    // show debugging outputs<br>
+    typename typedef std::list&lt;element&gt;::iterator iterator;<br>
+<br>
+    ScopeStack();<br>
+    void push(const element& item);<br>
+    element pop();<br>
+    element& top();<br>
+    element& predOfTop();<br>
+    size_t size();<br>
+    iterator begin();<br>
+    iterator end();<br>
+  private:<br>
+    std::list&lt;element&gt; stack;<br>
+    element dbElement;<br>
+  }</div>;<br>
+<br>
+  template&lt;typename element&gt;<br>
+  ScopeStack&lt;element&gt;::ScopeStack() {}<br>
+<br>
+  template&lt;typename element&gt;<br>
+  typename inline size_t ScopeStack&lt;element&gt;::size() { return stack.size(); }<br>
+<br>
+  template&lt;typename element&gt;<br>
+  typename inline ScopeStack&lt;element&gt;::iterator ScopeStack&lt;element&gt;::begin() { return stack.begin(); }<br>
+<br>
+  template&lt;typename element&gt;<br>
+  typename inline ScopeStack&lt;element&gt;::iterator ScopeStack&lt;element&gt;::end() { return stack.end(); }<br>
+<br>
+  template&lt;typename element&gt;<br>
+  void ScopeStack&lt;element&gt;::push(const element& item)<br>
+  {<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+    Demo::flush();<br>
+    stack.push_back(item);<br>
+    Dbug::write("\n--- stack size = " + Utilities::Converter&lt;size_t&gt;::toString(size()) + " ---");<br>
+    Dbug::flush();<br>
+  }</div><br>
+<br>
+  template&lt;typename element&gt;<br>
+  element ScopeStack&lt;element&gt;::pop()<br>
+  {<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+    if (stack.size() == 0)<br>
+    {<br>
+      throw std::exception("-- attempting to pop empty stack --");<br>
+    }<br>
+    element item = stack.back();<br>
+    stack.pop_back();    <br>
+    Dbug::write("\n--- stack size = " + Utilities::Converter&lt;size_t&gt;::toString(size()) + " ---");<br>
+    Dbug::flush();<br>
+<br>
+    return item;<br>
+  }</div><br>
+<br>
+  template&lt;typename element&gt;<br>
+  element& ScopeStack&lt;element&gt;::top()<br>
+  {<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+    if (stack.size() == 0)<br>
+    {<br>
+      throw std::exception("-- attempting to peek top on empty stack --");<br>
+    }<br>
+    return stack.back();<br>
+  }</div><br>
+<br>
+  template&lt;typename element&gt;<br>
+  element& ScopeStack&lt;element&gt;::predOfTop()<br>
+  {<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+    if (size() &lt; 2)<br>
+    {<br>
+      throw std::exception("-- predOfTop() called on stack with less than two elements --");<br>
+    }<br>
+    iterator iter = --(--end());<br>
+    return *iter;<br>
+  }</div><br>
+<br>
+  template&lt;typename element&gt;<br>
+  void showStack(ScopeStack&lt;element&gt;& stack, bool indent = true)<br>
+  {<button id ="994"onclick="myFunction6();toggleText6(this.id); ">-</button><div id = "myDIV6"><br>
+    if (stack.size() == 0)<br>
+    {<br>
+      std::cout &lt;&lt; "\n  ScopeStack is empty";<br>
+      return;<br>
+    }<br>
+    ScopeStack&lt;element&gt;::iterator iter = stack.begin();<br>
+    while (iter != stack.end())<br>
+    {<br>
+      std::string strIndent = std::string(2 * stack.size(), ' ');<br>
+      if (!indent)<br>
+        strIndent = "";<br>
+      element temp = *iter;<br>
+      std::cout &lt;&lt; "\n  " &lt;&lt; strIndent &lt;&lt; temp-&gt;show();<br>
+      ++iter;<br>
+    }<br>
+  }</div><br>
+<br>
+  template&lt;typename element&gt;<br>
+  void showStack(ScopeStack&lt;element*&gt;& stack, bool indent = true)<br>
+  {<button id ="993"onclick="myFunction7();toggleText7(this.id); ">-</button><div id = "myDIV7"><br>
+    if (stack.size() == 0)<br>
+    {<br>
+      std::cout &lt;&lt; "\n  ScopeStack is empty";<br>
+      return;<br>
+    }<br>
+    ScopeStack&lt;element*&gt;::iterator iter = stack.begin();<br>
+    while (iter != stack.end())<br>
+    {<br>
+      std::string strIndent = std::string(2 * stack.size(), ' ');<br>
+      if (!indent)<br>
+        strIndent = "";<br>
+      std::cout &lt;&lt; "\n  " &lt;&lt; strIndent &lt;&lt; ((*iter)-&gt;show());<br>
+      ++iter;<br>
+    }<br>
+  }</div><br>
+  //----&lt; walk tree of element nodes &gt;---------------------------------<br>
+<br>
+  template&lt;typename element&gt;<br>
+  void TreeWalk(element* pItem, bool details = false)<br>
+  {<button id ="992"onclick="myFunction8();toggleText8(this.id); ">-</button><div id = "myDIV8"><br>
+    static std::string path;<br>
+    static size_t indentLevel = 0;<br>
+    std::ostringstream out;<br>
+    out &lt;&lt; "\n  " &lt;&lt; std::string(2 * indentLevel, ' ') &lt;&lt; pItem-&gt;show();<br>
+    std::cout &lt;&lt; out.str();<br>
+    auto iter = pItem-&gt;children_.begin();<br>
+    ++indentLevel;<br>
+    while (iter != pItem-&gt;children_.end())<br>
+    {<br>
+      TreeWalk(*iter);<br>
+      ++iter;<br>
+    }<br>
+    --indentLevel;<br>
+  }</div><br>
+}<br>
+#endif<br>
+<//pre><//body><//html>

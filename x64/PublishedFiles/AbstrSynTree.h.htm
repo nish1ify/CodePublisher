@@ -1,0 +1,177 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "AbstrSynTree.h.htm">AbstrSynTree.h - </a><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "FileSystem.h.htm">FileSystem.h - </a><br><a href = "GrammarHelpers.cpp.htm">GrammarHelpers.cpp - </a><br><a href = "ScopeStack.h.htm">ScopeStack.h - </a><br><a href = "itokcollection.h.htm">itokcollection.h - </a><br><br><br>#pragma once<br>
+/////////////////////////////////////////////////////////////////////<br>
+//  AbstrSynTree.h - Represents an Abstract Syntax Tree            //<br>
+//  ver 1.4                                                        //<br>
+//  Language:      Visual C++ 2015                                 //<br>
+//  Platform:      Dell XPS 8900, Windows 10                       //<br>
+//  Application:   Used to support parsing source code             //<br>
+//  Author:        Jim Fawcett, CST 4-187, Syracuse University     //<br>
+//                 (315) 443-3948, jfawcett@twcny.rr.com           //<br>
+/////////////////////////////////////////////////////////////////////<br>
+/*<br>
+  Package Operations:<br>
+  ==================<br>
+  This package defines an AbstrSynTree class and an ASTNode struct.  <br>
+  Those provides support for building Abstract Syntax Trees during <br>
+  static source code analysis.<br>
+<br>
+  Public Interface:<br>
+  =================<br>
+  AbstrSynTree ast(scopeStack);       // create instance, passing in ScopeStack<br>
+  ASTNode* pNode = ast.root();        // get or set root of AST<br>
+  ast.add(pNode);                     // add ASTNode to tree, linked to current scope<br>
+  ASTNode* pNode = ast.find(myType);  // retrieve ptr to ASTNode representing myType<br>
+  ast.pop();                          // close current scope by poping top of scopeStack<br>
+<br>
+  Build Process:<br>
+  ==============<br>
+  Required files<br>
+  - AbstrSynTree.h, AbstrSynTree.cpp, Utilities.h, Utilities.cpp<br>
+<br>
+  Build commands (either one)<br>
+  - devenv CodeAnalysis.sln<br>
+  - cl /EHsc /DTEST_ABSTRSYNTREE AbstrSynTree.cpp Utilities.cpp /link setargv.obj<br>
+<br>
+  Maintenance History:<br>
+  ====================<br>
+  ver 1.4 : 26 Feb 2017<br>
+  - added parentType_ member to support better grammar analysis<br>
+  ver 1.3 : 29 Oct 2016<br>
+  - added throw in ScopeStack if pop or peek empty stack<br>
+  ver 1.2 : 28 Oct 2016<br>
+  - added test for interface in show() and Add(ASTNode*)<br>
+  ver 1.1 : 22 Aug 2016<br>
+  - added access type and declaration type enumerations<br>
+  - added processing to store access level in AST<br>
+  - added more prologue comments<br>
+  ver 1.0 : 05 Aug 2016<br>
+  - first release<br>
+<br>
+*/<br>
+<br>
+#include &lt;string&gt;<br>
+#include &lt;vector&gt;<br>
+#include &lt;sstream&gt;<br>
+#include &lt;unordered_map&gt;<br>
+#include &lt;functional&gt;<br>
+#include "../SemiExp/itokcollection.h"<br>
+#include "../ScopeStack/ScopeStack.h"<br>
+<br>
+namespace CodeAnalysis<br>
+{<br>
+  enum Access <br>
+  { <br>
+    publ, prot, priv <br>
+  };<br>
+<br>
+  enum DeclType <br>
+  { <br>
+    dataDecl, functionDecl, lambdaDecl, usingDecl <br>
+  };<br>
+<br>
+  struct DeclarationNode<br>
+  {<br>
+    Scanner::ITokCollection* pTc = nullptr;<br>
+    Access access_;<br>
+    DeclType declType_;<br>
+    std::string package_;<br>
+    size_t line_;<br>
+  };<br>
+<br>
+  struct ASTNode<br>
+  {<br>
+    using Type = std::string;<br>
+    using Name = std::string;<br>
+    using Package = std::string;<br>
+    using Path = std::string;<br>
+<br>
+    ASTNode();<br>
+    ASTNode(const Type& type, const Name& name);<br>
+    ~ASTNode();<br>
+    Type type_;<br>
+    Type parentType_;<br>
+    Name name_;<br>
+    Package package_;<br>
+    Path path_;<br>
+    size_t startLineCount_;<br>
+    size_t endLineCount_;<br>
+    size_t complexity_;<br>
+    std::vector&lt;ASTNode*&gt; children_;<br>
+    std::vector&lt;DeclarationNode&gt; decl_;<br>
+    std::vector&lt;Scanner::ITokCollection*&gt; statements_;<br>
+    std::string show(bool details = false);<br>
+  };<br>
+<br>
+  class AbstrSynTree<br>
+  {<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+  public:<br>
+    using ClassName = std::string;<br>
+    using TypeMap = std::unordered_map&lt;ClassName, ASTNode*&gt;;<br>
+<br>
+    AbstrSynTree(ScopeStack&lt;ASTNode*&gt;& stack);<br>
+    ~AbstrSynTree();<br>
+    ASTNode*& root();<br>
+    void add(ASTNode* pNode);<br>
+    ASTNode* find(const ClassName& type);<br>
+    ASTNode* pop();<br>
+    TypeMap& typeMap();<br>
+  private:<br>
+    TypeMap typeMap_;<br>
+    ScopeStack&lt;ASTNode*&gt;& stack_;<br>
+    ASTNode* pGlobalNamespace_;<br>
+  }</div>;<br>
+  //----&lt; traverse AST and execute callobj on every node &gt;-------------<br>
+<br>
+  template &lt;typename CallObj&gt;<br>
+  void ASTWalk(ASTNode* pItem, CallObj co)<br>
+  {<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+    static size_t indentLevel = 0;<br>
+    co(pItem, indentLevel);<br>
+    auto iter = pItem-&gt;children_.begin();<br>
+    ++indentLevel;<br>
+    while (iter != pItem-&gt;children_.end())<br>
+    {<br>
+      ASTWalk(*iter, co);<br>
+      ++iter;<br>
+    }<br>
+    --indentLevel;<br>
+  }</div><br>
+  //----&lt; traverse AST and execute callobj on every node &gt;-------------<br>
+<br>
+  template &lt;typename CallObj&gt;<br>
+  void ASTWalkNoIndent(ASTNode* pItem, CallObj co)<br>
+  {<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+    co(pItem);<br>
+    auto iter = pItem-&gt;children_.begin();<br>
+    while (iter != pItem-&gt;children_.end())<br>
+    {<br>
+      ASTWalkNoIndent(*iter, co);<br>
+      ++iter;<br>
+    }<br>
+  }</div><br>
+  //----&lt; compute complexities for each ASTNode &gt;--------------------<br>
+<br>
+  inline void complexityWalk(ASTNode* pItem, size_t& count)<br>
+  {<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+    size_t inCount = ++count;<br>
+    auto iter = pItem-&gt;children_.begin();<br>
+    while (iter != pItem-&gt;children_.end())<br>
+    {<br>
+      complexityWalk(*iter, count);<br>
+      ++iter;<br>
+    }<br>
+    pItem-&gt;complexity_ = count - inCount + 1;<br>
+  }</div><br>
+  //----&lt; compute complexities for each ASTNode &gt;--------------------<br>
+<br>
+  inline void complexityEval(ASTNode* pNode)<br>
+  {<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+    size_t initialCount = 0;<br>
+    complexityWalk(pNode, initialCount);<br>
+  }</div><br>
+}<br>
+<br>
+struct foobar {<br>
+<br>
+};<br>
+<//pre><//body><//html>

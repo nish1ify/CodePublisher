@@ -1,0 +1,82 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "CopyOfUnitTest.h.htm">CopyOfUnitTest.h - </a><br><a href = "Cpp11-BlockingQueue.cpp.htm">Cpp11-BlockingQueue.cpp - </a><br><a href = "FileSystem.cpp.htm">FileSystem.cpp - </a><br><br><br>#ifndef UNITTEST_H<br>
+#define UNITTEST_H<br>
+///////////////////////////////////////////////////////////////<br>
+// UnitTest.cpp - Demonstrate unit testing framework         //<br>
+// ver 1.1                                                   //<br>
+// --------------------------------------------------------- //<br>
+// copyright © Jim Fawcett, 2012, 2013                       //<br>
+// All rights granted provided that this notice is retained  //<br>
+// --------------------------------------------------------- //<br>
+// Jim Fawcett, CSE687-Object Oriented Design, Spring 2013   //<br>
+///////////////////////////////////////////////////////////////<br>
+<br>
+#include &lt;string&gt;<br>
+#include &lt;iostream&gt;<br>
+<br>
+namespace Test<br>
+{<br>
+  void Title(const std::string& title, char ch='=')<br>
+  {<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+    std::cout &lt;&lt; "\n  " &lt;&lt; title;<br>
+    std::cout &lt;&lt; "\n " &lt;&lt; std::string(title.size() + 2, ch);<br>
+  }</div><br>
+<br>
+  template &lt;typename T&gt;<br>
+  class TestBase<br>
+  {<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+  public:<br>
+<br>
+    typedef bool (T::*Test) ();<br>
+<br>
+    virtual ~TestBase() {}<br>
+<br>
+    // Your test driver implements this for each major test<br>
+    // - call a sequence of doTest(TestN)s<br>
+    //-----------------------------------------------------<br>
+    virtual bool test()=0;<br>
+<br>
+    // Executes test functions inside a try block<br>
+    //-------------------------------------------<br>
+    bool doTest(Test atest) <br>
+    { <br>
+      try<br>
+      {<br>
+        return (dynamic_cast&lt;T*&gt;(this)-&gt;*atest)();<br>
+      }<br>
+      catch (std::exception& ex)<br>
+      {<br>
+        std::cout &lt;&lt; "\n  failed: " &lt;&lt; ex.what();<br>
+        return false;<br>
+      }<br>
+      catch(...)<br>
+      {<br>
+        std::cout &lt;&lt; "\n  failed: thrown structured exception";<br>
+        return false;<br>
+      }<br>
+    }</div><br>
+    // Call this in your test functions to save duplicating output statements<br>
+    //-----------------------------------------------------------------------<br>
+    bool checkResult(bool predicate, std::string testname)<br>
+    {<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+      std::string name = std::string(typeid(*this).name()) + "::" + testname;<br>
+      name = name.substr(6, name.size() - 6);<br>
+      if(predicate)<br>
+        return passed(name);<br>
+      else<br>
+        return failed(name);<br>
+    }</div><br>
+  protected:<br>
+    bool passed(const std::string& name)<br>
+    {<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+      std::cout &lt;&lt; "\n  passed: " &lt;&lt; name;<br>
+      return true;<br>
+    }</div><br>
+    bool failed(const std::string& name)<br>
+    {<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+      std::cout &lt;&lt; "\n  failed: " &lt;&lt; name;<br>
+      return false;<br>
+    }</div><br>
+  }</div>;<br>
+}<br>
+#endif<br>
+<//pre><//body><//html>

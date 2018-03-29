@@ -1,0 +1,86 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><br><br>#pragma once<br>
+/////////////////////////////////////////////////////////////////////////<br>
+// DepAnal.h - Demonstrate how to start developing dependency analyzer //<br>
+//                                                                     //<br>
+// Jim Fawcett, CSE687 - Object Oriented Design, Spring 2017           //<br>
+/////////////////////////////////////////////////////////////////////////<br>
+/*<br>
+ * You need to provide all the manual and maintenance informnation<br>
+ */<br>
+<br>
+<br>
+/*<br>
+//#include "../Parser/ActionsAndRules.h"<br>
+#include &lt;iostream&gt;<br>
+#include &lt;functional&gt;<br>
+<br>
+#pragma warning (disable : 4101)  // disable warning re unused variable x, below<br>
+<br>
+<br>
+<br>
+namespace CodeAnalysis<br>
+{<br>
+  class TypeAnal<br>
+  {<br>
+  public:<br>
+    using SPtr = std::shared_ptr&lt;ASTNode*&gt;;<br>
+<br>
+    TypeAnal();<br>
+    void doTypeAnal();<br>
+  private:<br>
+    void DFS(ASTNode* pNode);<br>
+    AbstrSynTree& ASTref_;<br>
+    ScopeStack&lt;ASTNode*&gt; scopeStack_;<br>
+    Scanner::Toker& toker_;<br>
+  };<br>
+<br>
+  inline TypeAnal::TypeAnal() : <br>
+    ASTref_(Repository::getInstance()-&gt;AST()),<br>
+    scopeStack_(Repository::getInstance()-&gt;scopeStack()),<br>
+    toker_(*(Repository::getInstance()-&gt;Toker()))<br>
+  {<br>
+    std::function&lt;void()&gt; test = [] { int x; };  // This is here to test detection of lambdas.<br>
+  }                                              // It doesn't do anything useful for dep anal.<br>
+<br>
+  inline bool doDisplay(ASTNode* pNode)<br>
+  {<br>
+    static std::string toDisplay[] = {<br>
+      "function", "lambda", "class", "struct", "enum", "alias", "typedef"<br>
+    };<br>
+    for (std::string type : toDisplay)<br>
+    {<br>
+      if (pNode-&gt;type_ == type)<br>
+        return true;<br>
+    }<br>
+    return false;<br>
+  }<br>
+  inline void TypeAnal::DFS(ASTNode* pNode)<br>
+  {<br>
+    static std::string path = "";<br>
+    if (pNode-&gt;path_ != path)<br>
+    {<br>
+      std::cout &lt;&lt; "\n    -- " &lt;&lt; pNode-&gt;path_ &lt;&lt; "\\" &lt;&lt; pNode-&gt;package_;<br>
+      path = pNode-&gt;path_;<br>
+    }<br>
+    if (doDisplay(pNode))<br>
+    {<br>
+      std::cout &lt;&lt; "\n  " &lt;&lt; pNode-&gt;name_;<br>
+      std::cout &lt;&lt; ", " &lt;&lt; pNode-&gt;type_;<br>
+    }<br>
+    for (auto pChild : pNode-&gt;children_)<br>
+      DFS(pChild);<br>
+  }<br>
+<br>
+  inline void TypeAnal::doTypeAnal()<br>
+  {<br>
+    std::cout &lt;&lt; "\n  starting type analysis:\n";<br>
+    std::cout &lt;&lt; "\n  scanning AST and displaying important things:";<br>
+    std::cout &lt;&lt; "\n -----------------------------------------------";<br>
+    ASTNode* pRoot = ASTref_.root();<br>
+    DFS(pRoot);<br>
+    std::cout &lt;&lt; "\n\n  the rest is for you to complete\n";<br>
+  }<br>
+}<br>
+<br>
+*/<br>
+<//pre><//body><//html>

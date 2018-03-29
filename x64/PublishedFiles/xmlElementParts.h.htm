@@ -1,0 +1,112 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "GrammarHelpers.cpp.htm">GrammarHelpers.cpp - </a><br><a href = "Tokenizer.h.htm">Tokenizer.h - </a><br><a href = "itokcollection.h.htm">itokcollection.h - </a><br><a href = "xmlElementParts.h.htm">xmlElementParts.h - </a><br><br><br>#ifndef XMLELEMENTPARTS_H<br>
+#define XMLELEMENTPARTS_H<br>
+/////////////////////////////////////////////////////////////////////<br>
+//  XmlElementParts.h - Collects tokens for XML analysis           //<br>
+//  ver 1.3                                                        //<br>
+//                                                                 //<br>
+//  Language:      Visual C++ 2008, SP1                            //<br>
+//  Platform:      Dell Precision T7400, Vista Ultimate SP1        //<br>
+//  Application:   Prototype for CSE687 Pr1, Sp09                  //<br>
+//  Author:        Jim Fawcett, CST 4-187, Syracuse University     //<br>
+//                 (315) 443-3948, jfawcett@twcny.rr.com           //<br>
+/////////////////////////////////////////////////////////////////////<br>
+/*<br>
+  Module Operations: <br>
+  ==================<br>
+  This module defines an XmlParts class.  Its instances build a sequence <br>
+  of tokens obtained from the Tokenizer module for analysis of XML.<br>
+  XmlElementParts are lists of tokens that terminate on one of the tokens:<br>
+  &lt; or &gt;.<br>
+<br>
+  This structure is designed to collect just the right amount of inform-<br>
+  ation from an XML file for analysis.  That is, it collects the smallest<br>
+  set of tokens that lead to the detection of grammatical constructs, <br>
+  without having to save part of the sequence for later use or get more<br>
+  to complete the detection process.  This simplifies the design of code<br>
+  analysis tools.<br>
+<br>
+  Note that assignment and copying of XmlParts instances is supported, using<br>
+  the default operations provided by the C++ language.  Copies and assignments<br>
+  result in both source and target XmlParts instances sharing the same toker.<br>
+<br>
+  Public Interface:<br>
+  =================<br>
+  Toker t;                                  // create tokenizer instance<br>
+  XmlParts parts(&t);                       // create instance and attach<br>
+  if(xml.get())                             // collect an XmlElementParts<br>
+    std::cout &lt;&lt; parts.showXmlParts().c_str();  // show it<br>
+  int n = parts.length();                   // number of tokens in parts<br>
+  std::string tok = parts[2] = "a change";  // indexed read and write<br>
+  if(parts.find("aTok") &lt; parts.length())   // search for a token<br>
+    std::cout &lt;&lt; "found aTok";  <br>
+  parts.clear();                            // remove all tokens<br>
+<br>
+  Build Process:<br>
+  ==============<br>
+  Required files<br>
+    - XmlElementParts.h, XmlElementParts.cpp, Tokenizer.h, Tokenizer.cpp<br>
+  Build commands (either one)<br>
+    - devenv Project1HelpS09.sln<br>
+    - cl /EHsc /DTEST_XMLELEMENTPARTS XmlElementParts.cpp Tokenizer.cpp \<br>
+         /link setargv.obj<br>
+<br>
+  Maintenance History:<br>
+  ====================<br>
+  ver 1.3 : 31 Jan 09<br>
+  - fixed bug identified by Phil Pratt-Szeliga where white space before<br>
+    an internal '&lt;' character caused a parsing error.  The solution used<br>
+    here is Phil's suggested solution.<br>
+  ver 1.1 : 24 Jan 09<br>
+  - fixed parsing failure when encountering internal '&lt;' character<br>
+  ver 1.0 : 17 Jan 09<br>
+  - first release<br>
+<br>
+*/<br>
+#include &lt;string&gt;<br>
+#include &lt;iostream&gt;<br>
+#include &lt;fstream&gt;<br>
+#include &lt;vector&gt;<br>
+#include "ITokCollection.h"<br>
+#include "tokenizer.h"<br>
+<br>
+class XmlParts : public ITokCollection<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+public:<br>
+  XmlParts(Toker* pTokr);<br>
+  XmlParts();<br>
+  ~XmlParts();<br>
+  bool get();<br>
+  int length();<br>
+  std::string& operator[](int n);<br>
+  int find(const std::string& tok);<br>
+  void push_back(const std::string& tok);<br>
+  bool remove(const std::string& tok);<br>
+  void toLower();<br>
+  void trimFront();<br>
+  void clear();<br>
+  std::string show();<br>
+  void verbose(bool v = true);<br>
+<br>
+private:<br>
+  Toker* pToker;<br>
+  std::vector&lt;std::string&gt; toks;<br>
+  bool isTerminator(std::string tok);<br>
+  bool Verbose;<br>
+}</div>;<br>
+<br>
+inline XmlParts::XmlParts() : pToker(nullptr) {}<br>
+<br>
+inline int XmlParts::length() { return (int)toks.size(); }<br>
+<br>
+inline void XmlParts::verbose(bool v) { Verbose = v; }<br>
+<br>
+inline void XmlParts::clear() { toks.clear(); }<br>
+<br>
+inline void XmlParts::push_back(const std::string& tok)<br>
+{<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+  toks.push_back(tok);<br>
+}</div><br>
+<br>
+<br>
+#endif<br>
+<//pre><//body><//html>

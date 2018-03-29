@@ -1,0 +1,135 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "CppProperties.h.htm">CppProperties.h - </a><br><br><br>#pragma once<br>
+/////////////////////////////////////////////////////////////////////<br>
+// CppProperties.h - Defines read/write and read only properties   //<br>
+// ver 1.1                                                         //<br>
+// Source: Michael Litvin (see link below)                         //<br>
+// Jim Fawcett, CSE687 - Object Oriented Design, Spring 2017       //<br>
+/////////////////////////////////////////////////////////////////////<br>
+//<br>
+// Got the idea from discussion here (scroll down about halfway):<br>
+// http://stackoverflow.com/questions/8368512/does-c11-have-c-style-properties<br>
+// This implementation is quite different however.<br>
+/*<br>
+ * Note:<br>
+ * -----<br>
+ *   These properties provide virtual methods to support changing the<br>
+ *   operation of getter and setter.  But, you don't usually want to<br>
+ *   override because that changes the name of the property.  For example<br>
+ *   see the Y class defined in CppProperties.cpp.<br>
+ *<br>
+ *   Instead, you should prefer to use the methods to provide new getter<br>
+ *   and setter functions to change the property behaviors, as that<br>
+ *   does not change the user's interface.<br>
+ *<br>
+ * Maintenance History:<br>
+ * --------------------<br>
+ * ver 1.1 : Jan 28 2017<br>
+ * - fixed bug in Property class by removing bound data from all lambdas.<br>
+ * ver 1.0 : Jan 08 2017<br>
+ * - first release<br>
+ *<br>
+*/<br>
+#include &lt;iostream&gt;<br>
+#include &lt;functional&gt;<br>
+<br>
+/////////////////////////////////////////////////////////////////////<br>
+// Property&lt;T&gt; class provides encapsulated properties for C++<br>
+// - getter and setter functions can be customized without changing<br>
+//   the client interface for any class that uses Property&lt;T&gt;<br>
+//<br>
+template&lt;typename T&gt;<br>
+class Property<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+public:<br>
+  using SetterType = std::function&lt;T(const T&t)&gt;;<br>
+  using GetterType = std::function&lt;T(const T&t)&gt;;<br>
+<br>
+  // initialize the property field<br>
+<br>
+  Property() : value(T()) {}<br>
+  Property(const T& t) : value(t) {}<br>
+  virtual ~Property() {}<br>
+  <br>
+  // set the property field with assignment operator<br>
+<br>
+  virtual Property&lt;T&gt;& operator=(const T &t)<br>
+  { <br>
+    value = setter_(t); <br>
+    return *this; <br>
+  }</div><br>
+  // get the property field with cast operator<br>
+<br>
+  virtual operator const T() const { return getter_(value); }<br>
+  <br>
+  // define methods to customize getter and setter behaviors<br>
+<br>
+  void newSetter(SetterType sttr) { setter_ = sttr; }<br>
+  void newGetter(GetterType gttr) { getter_ = gttr; }<br>
+<br>
+  T getValue() { return value; }  // may be needed by custom getters<br>
+<br>
+protected:<br>
+  T value;  // property field<br>
+<br>
+  // define default getter and setter behavior using lambdas<br>
+<br>
+  SetterType setter_ = [](const T& t) { return t; };   // default setter<br>
+  GetterType getter_ = [](const T& v) { return v; };   // default getter<br>
+}</div>;<br>
+<br>
+/*----&lt; overload insertion operator for std::string properties &gt;---*/<br>
+<br>
+std::ostream& operator&lt;&lt;(std::ostream& out, Property&lt;std::string&gt;& p)<br>
+{<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+  std::string temp = p;<br>
+  try {<br>
+    out &lt;&lt; (temp).c_str();<br>
+  }<br>
+  catch (std::exception& ex)<br>
+  {<br>
+    std::cout &lt;&lt; "\n  exception:\n  " &lt;&lt; ex.what() &lt;&lt; "\n";<br>
+  }<br>
+  return out;<br>
+}</div><br>
+<br>
+/////////////////////////////////////////////////////////////////////<br>
+// Property&lt;const T&gt; class provides encapsulated properties for C++<br>
+// - getter function can be customized without changing<br>
+//   the client interface for any class that uses Property&lt;T&gt;<br>
+// - no setter is provided since the class is used for const properties<br>
+// - comments for this class would be same as above, and so are omitted<br>
+//<br>
+template&lt;typename T&gt;<br>
+class Property&lt;const T&gt;<br>
+{<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+public:<br>
+  using SetterType = std::function&lt;T(const T&t)&gt;;<br>
+  using GetterType = std::function&lt;T(const T&t)&gt;;<br>
+<br>
+  Property() : value(T()) {}<br>
+  Property(const T& t) : value(t) {}<br>
+  virtual ~Property() {}<br>
+  void newGetter(GetterType gttr) { getter_ = gttr; }<br>
+  virtual operator const T() const { return getter_(value); }<br>
+  T getValue() { return value; }                      // used by custom getters<br>
+protected:<br>
+  T value;<br>
+  GetterType getter_ = [](const T& v) { return v; };  // default getter<br>
+}</div>;<br>
+<br>
+/*----&lt; overload insertion operator for std::string properties &gt;---*/<br>
+<br>
+std::ostream& operator&lt;&lt;(std::ostream& out, Property&lt;const std::string&gt;& p)<br>
+{<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+  std::string temp = p;<br>
+  try {<br>
+    out &lt;&lt; (temp).c_str();<br>
+  }<br>
+  catch (std::exception& ex)<br>
+  {<br>
+    std::cout &lt;&lt; "\n  exception:\n  " &lt;&lt; ex.what() &lt;&lt; "\n";<br>
+  }<br>
+  return out;<br>
+}</div><br>
+<br>
+<//pre><//body><//html>

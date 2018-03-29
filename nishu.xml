@@ -1,0 +1,84 @@
+
+  <DBX>
+    <Record>
+      <Key>
+        C:\Users\nish1ify\Desktop\OOD Project 3\CodeAnalyzerEx\Parser\ActionsAndRules.h
+      </Key>
+      <Children-Keys>
+        <Child>
+          ActionsAndRules.h
+        </Child>
+        <Child>
+          Parser.h
+        </Child>
+      </Children-Keys>
+    </Record>
+    <Record>
+      <Key>
+        C:\Users\nish1ify\Desktop\OOD Project 3\CodeAnalyzerEx\Parser\ConfigureParser.h
+      </Key>
+      <Children-Keys>
+        <Child>
+          ActionsAndRules.h
+        </Child>
+        <Child>
+          ConfigureParser.h
+        </Child>
+        <Child>
+          Parser.h
+        </Child>
+      </Children-Keys>
+    </Record>
+    <Record>
+      <Key>
+        C:\Users\nish1ify\Desktop\OOD Project 3\CodeAnalyzerEx\Parser\Parser.h
+      </Key>
+      <Children-Keys>
+        <Child>
+          Parser.h
+        </Child>
+      </Children-Keys>
+    </Record>
+    <Record>
+      <Key>
+        C:\Users\nish1ify\Desktop\OOD Project 3\CodeAnalyzerEx\Parser\ActionsAndRules.cpp
+      </Key>
+      <Children-Keys>
+        <Child>
+          ActionsAndRules.h
+        </Child>
+      </Children-Keys>
+    </Record>
+    <Record>
+      <Key>
+        C:\Users\nish1ify\Desktop\OOD Project 3\CodeAnalyzerEx\Parser\ConfigureParser.cpp
+      </Key>
+      <Children-Keys>
+        <Child>
+          ActionsAndRules.h
+        </Child>
+        <Child>
+          ConfigureParser.h
+        </Child>
+        <Child>
+          Parser.h
+        </Child>
+      </Children-Keys>
+    </Record>
+    <Record>
+      <Key>
+        C:\Users\nish1ify\Desktop\OOD Project 3\CodeAnalyzerEx\Parser\Parser.cpp
+      </Key>
+      <Children-Keys>
+        <Child>
+          ActionsAndRules.h
+        </Child>
+        <Child>
+          ConfigureParser.h
+        </Child>
+        <Child>
+          Parser.h
+        </Child>
+      </Children-Keys>
+    </Record>
+  </DBX>

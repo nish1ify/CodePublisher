@@ -1,0 +1,156 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "Tokenizer.h.htm">Tokenizer.h - </a><br><br><br>#ifndef TOKENIZER_H<br>
+#define TOKENIZER_H<br>
+/////////////////////////////////////////////////////////////////////<br>
+//  Tokenizer.h - Reads words from a file                          //<br>
+//  ver 1.9                                                        //<br>
+//                                                                 //<br>
+//  Language:      Visual C++ 2008, SP1                            //<br>
+//  Platform:      Dell Precision T7400, Vista Ultimate SP1        //<br>
+//  Application:   Prototype for CSE687 Pr1, Sp09                  //<br>
+//  Author:        Jim Fawcett, CST 4-187, Syracuse University     //<br>
+//                 (315) 443-3948, jfawcett@twcny.rr.com           //<br>
+/////////////////////////////////////////////////////////////////////<br>
+/*<br>
+  Module Operations: <br>
+  ==================<br>
+  This module defines a tokenizer class.  Its instances read words from <br>
+  an attached file or string.  Word boundaries occur when a character sequence<br>
+  read from the file or string:<br>
+  - changes between any of the character types: alphanumeric, punctuator,<br>
+    or white space.<br>
+  - certain characters are treated as single character tokens, e.g., <br>
+    "(", ")", "{", "}", "[". "]", ";", ".", and "\n".<br>
+    You can change the selection with Toker::setMode(Toker::code) or<br>
+    Toker::setMode(Toker::xml), or Toker::setSingleCharTokens(somestring);<br>
+  - Toker::code is the default tokenizing mode.<br>
+  A tokenizer is an important part of a scanner, used to read and interpret<br>
+  source code or XML.<br>
+<br>
+  Public Interface:<br>
+  =================<br>
+  Toker t;                        // create tokenizer instance<br>
+  returnComments();               // request comments return as tokens<br>
+  if(t.attach(someFileName))      // select file for tokenizing<br>
+    string tok = t.getTok();      // extract first token<br>
+  int numLines = t.lines();       // return number of lines encountered<br>
+  t.lines() = 0;                  // reset line count<br>
+<br>
+  Build Process:<br>
+  ==============<br>
+  Required files<br>
+    - tokenizer.h, tokenizer.cpp<br>
+  Build commands (either one)<br>
+    - devenv Project1HelpS06.sln<br>
+    - cl /EHsc /DTEST_TOKENIZER tokenizer.cpp /link setargv.obj<br>
+<br>
+  Maintenance History:<br>
+  ====================<br>
+  ver 1.9 : 18 Mar 10<br>
+  - added thrown exception if get to end of file in eatQuote()<br>
+  ver 1.8 : 02 Mar 10<br>
+  - fixed leak of allocated stream.  That required changes to ~Toker() and attach(...).<br>
+  ver 1.7 : 31 Jan 09<br>
+  - made putback(int) a public, rather than private, member function<br>
+  ver 1.6 : 22 Jan 09<br>
+  - added Toker::setSingleTokenChars(somestring)<br>
+  - added notes about setMode and setSingleTokenChars to Manual<br>
+    and Maintenance information.<br>
+  ver 1.5 : 17 Jan 09<br>
+  - added Toker::mode, either code or xml<br>
+  - changed container for single char token ids from vector&lt;char&gt;<br>
+    to string<br>
+  - added test for end of file in isTokEnd() to fix bug, found by<br>
+    Jim DelloStritto that sometimes caused Toker to fail returning<br>
+    last character if not a singleCharToken<br>
+  ver 1.4 : 10 Feb 07<br>
+  - fixed bug in braceCount to eliminate changing count when brace<br>
+    is in a quoted string or comment<br>
+  ver 1.3 : 24 Feb 06<br>
+  - fixed bug in eat comment that hung on ending comment with no<br>
+    newline, by testing for stream state good.<br>
+  ver 1.2 : 06 Feb 06<br>
+  - added stream closing to destructor and attach memeber functions<br>
+  ver 1.1 : 01 Feb 06<br>
+  - added if test at end of getTok() to avoid returning space after <br>
+    C comment as a token<br>
+  ver 1.0 : 12 Jan 06<br>
+  - first release<br>
+<br>
+  ToDo:<br>
+  =====<br>
+  - Richard Zuber, CSE687 Sp2010, reported a bug involving crashes on unicode chars<br>
+    in certain calls to the C-Library function isspace(), specifically in isTokEnd().<br>
+    He suggested switching to an overload that uses a locale.<br>
+<br>
+    There are many calls to isspace() and other character handling library functions<br>
+    that should be checked for this failure, so I, regretably have to postpone that<br>
+    exploration to some later time.<br>
+*/<br>
+//<br>
+#include &lt;string&gt;<br>
+#include &lt;iostream&gt;<br>
+#include &lt;vector&gt;<br>
+<br>
+class Toker<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+public:<br>
+  enum mode { code, xml, custom };<br>
+  Toker(const std::string& src = "", bool isFile = true);<br>
+  ~Toker();<br>
+  void setMode(mode md);<br>
+  void setSingleCharTokens(std::string tokChars);<br>
+  bool attach(const std::string& filename, bool isFile = true);<br>
+  std::string getTok();<br>
+  void returnComments(bool doReturn = true);<br>
+  int& lines();<br>
+  int  braceLevel();<br>
+  bool isFileEnd();<br>
+  int  peek();           // peek at next char (not token)<br>
+  void putback(int ch);  // put back char on stream (not token)<br>
+  enum state { default_state, comment_state, quote_state };<br>
+<br>
+private:<br>
+  std::istream* pIn;<br>
+  char prevprevChar, prevChar, currChar, nextChar;<br>
+  std::string scTok;<br>
+  std::vector&lt;char&gt; putbacks;<br>
+  int numLines;<br>
+  int braceCount;<br>
+  bool doReturnComments;<br>
+  bool aCppComment;<br>
+  enum state _state;<br>
+  mode _mode;<br>
+<br>
+  // private helper functions<br>
+  int  get();<br>
+  bool getChar();<br>
+  bool isSingleCharTok(char ch);<br>
+  bool isTokEnd();<br>
+  void stripWhiteSpace();<br>
+  bool isIdentifierChar(char ch);<br>
+  bool isBeginComment();<br>
+  bool isEndComment();<br>
+  std::string eatComment();<br>
+  bool aSingleQuote;<br>
+  bool isBeginQuote();<br>
+  bool isEndQuote();<br>
+  std::string eatQuote();<br>
+<br>
+  // prohibit copying and assignment<br>
+  Toker(const Toker &tkr);<br>
+  Toker& operator=(const Toker&);<br>
+}</div>;<br>
+<br>
+inline void Toker::returnComments(bool doReturn)<br>
+{<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+  doReturnComments = doReturn;<br>
+}</div><br>
+<br>
+inline bool Toker::isFileEnd() { return (nextChar == -1); }<br>
+<br>
+inline int& Toker::lines() { return numLines; }<br>
+<br>
+inline int Toker::braceLevel() { return braceCount; }<br>
+<br>
+#endif<br>
+<//pre><//body><//html>

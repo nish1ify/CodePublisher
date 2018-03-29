@@ -1,0 +1,74 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "CopyOfUnitTest.h.htm">CopyOfUnitTest.h - </a><br><a href = "Cpp11-BlockingQueue.cpp.htm">Cpp11-BlockingQueue.cpp - </a><br><a href = "UnitTest.cpp.htm">UnitTest.cpp - </a><br><br><br>///////////////////////////////////////////////////////////////<br>
+// UnitTest.cpp - Demonstrate unit testing framework         //<br>
+// ver 1.1                                                   //<br>
+// --------------------------------------------------------- //<br>
+// copyright © Jim Fawcett, 2012, 2013                       //<br>
+// All rights granted provided that this notice is retained  //<br>
+// --------------------------------------------------------- //<br>
+// Jim Fawcett, CSE687-Object Oriented Design, Spring 2013   //<br>
+///////////////////////////////////////////////////////////////<br>
+/*<br>
+ * This is what a test class should look like:<br>
+ */<br>
+#include "UnitTest.h"<br>
+#include &lt;string&gt;<br>
+#include &lt;iostream&gt;<br>
+using namespace Test;<br>
+<br>
+ class TestStdStringClass : public TestBase&lt;TestStdStringClass&gt;<br>
+ {<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+ public:<br>
+   bool TestConstruction()<br>
+   {<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+     bool t1, t2;<br>
+     std::string s1("this is a string");<br>
+     t1 = (s1 == "this is a string");<br>
+     std::string s2;<br>
+     t2 = (s2.size() == 0);<br>
+     return checkResult(t1 && t2, "TestConstruction");<br>
+   }</div><br>
+   bool TestCopy()<br>
+   {<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+     bool t1;<br>
+     std::string orig = "a string";<br>
+     std::string copy = orig;<br>
+     t1 = (copy == orig && &copy != &orig);<br>
+     return checkResult(t1, "TestCopy");<br>
+   }</div><br>
+   bool TestWillThrowStdException()<br>
+   {<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+     throw std::exception("TestWillThrowStdException");<br>
+     return true;<br>
+   }</div><br>
+   bool TestWillThrowStructuredException()<br>
+   {<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+     int x=1, y=0;<br>
+     x = x/y;<br>
+     return true;<br>
+   }</div><br>
+   bool test()  // overriding inherited test method<br>
+   {<button id ="994"onclick="myFunction6();toggleText6(this.id); ">-</button><div id = "myDIV6"><br>
+     bool t1, t2, t3, t4;<br>
+     t1 = doTest(&TestStdStringClass::TestConstruction);<br>
+     t2 = doTest(&TestStdStringClass::TestCopy);<br>
+     t3 = doTest(&TestStdStringClass::TestWillThrowStdException);<br>
+     t4 = doTest(&TestStdStringClass::TestWillThrowStructuredException);<br>
+     return t1 && t2 && !t3 && !t4;<br>
+   }</div><br>
+ private:<br>
+   // save here data needed in more than one test <br>
+ }</div>;<br>
+#ifdef TEST_UNITTEST<br>
+int main()<br>
+{<button id ="993"onclick="myFunction7();toggleText7(this.id); ">-</button><div id = "myDIV7"><br>
+  Title("Demonstrating UnitTest Package");<br>
+<br>
+  TestStdStringClass test;<br>
+  if(test.test())<br>
+    std::cout &lt;&lt; "\n  all tests passed";<br>
+  else<br>
+    std::cout &lt;&lt; "\n  one or more tests failed";<br>
+  std::cout &lt;&lt; "\n\n";<br>
+}</div><br>
+#endif<br>
+<//pre><//body><//html>

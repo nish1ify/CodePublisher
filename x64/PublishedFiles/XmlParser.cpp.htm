@@ -1,0 +1,354 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "FileSystem.cpp.htm">FileSystem.cpp - </a><br><a href = "FileSystem.h.htm">FileSystem.h - </a><br><a href = "GrammarHelpers.cpp.htm">GrammarHelpers.cpp - </a><br><a href = "Test1.cpp.htm">Test1.cpp - </a><br><a href = "Tokenizer.h.htm">Tokenizer.h - </a><br><a href = "Utilities.cpp.htm">Utilities.cpp - </a><br><a href = "Utilities.h.htm">Utilities.h - </a><br><a href = "XmlDocument.cpp.htm">XmlDocument.cpp - </a><br><a href = "XmlDocument.h.htm">XmlDocument.h - </a><br><a href = "XmlElement.cpp.htm">XmlElement.cpp - </a><br><a href = "XmlElement.h.htm">XmlElement.h - </a><br><a href = "XmlParser.cpp.htm">XmlParser.cpp - </a><br><a href = "XmlParser.h.htm">XmlParser.h - </a><br><a href = "xmlElementParts.h.htm">xmlElementParts.h - </a><br><br><br>///////////////////////////////////////////////////////////////////<br>
+// XmlParser.cpp - build XML parse tree                          //<br>
+// ver 1.3                                                       //<br>
+// Application: Support for XmlDocument, Summer 2015             //<br>
+// Platform:    Dell XPS 2720, Win 8.1 Pro, Visual Studio 2013   //<br>
+// Author:      Jim Fawcett, CST 4-187, 443-3948                 //<br>
+//              jfawcett@twcny.rr.com                            //<br>
+///////////////////////////////////////////////////////////////////<br>
+<br>
+#include "XmlParser.h"<br>
+#include "../XmlElementParts/xmlElementParts.h"<br>
+#include "../XmlDocument/XmlDocument.h"<br>
+#include "../XmlElement/XmlElement.h"<br>
+#include "../XmlElementParts/Tokenizer.h"<br>
+#include &lt;stack&gt;<br>
+#include &lt;string&gt;<br>
+#include &lt;cctype&gt;<br>
+#include &lt;locale&gt;<br>
+#include &lt;fstream&gt;<br>
+#include &lt;sstream&gt;<br>
+#include "../Utilities/Utilities.h"<br>
+<br>
+using namespace XmlProcessing;<br>
+<br>
+//----&lt; read text file contents into string &gt;--------------------------------<br>
+<br>
+std::string XmlParser::textFileToString(const std::string& fileName)<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+  std::ifstream in(fileName);<br>
+  if (!in.good())<br>
+    throw(std::exception(("can't open source file " + fileName).c_str()));<br>
+  std::ostringstream out;<br>
+  out &lt;&lt; in.rdbuf();<br>
+  return std::move(out.str());<br>
+}</div><br>
+//----&lt; remove non-essential whitespace from XML string &gt;--------------------<br>
+<br>
+void XmlParser::compress(std::string& srcStr)<br>
+{<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+  std::locale loc("");<br>
+  enum state_ { inTag, inText, outSide } state = outSide;<br>
+  std::string::iterator src, dst;<br>
+  src = dst = srcStr.begin();<br>
+<br>
+  // state machine to process text string<br>
+<br>
+  for (src = srcStr.begin(); src != srcStr.end(); ++src)<br>
+  {<br>
+    switch (state)<br>
+    {<br>
+    case outSide:<br>
+      if (!isspace(*src, loc))  // efficiently remove whitespace<br>
+      {<br>
+        *dst++ = *src;<br>
+        state = inTag;<br>
+      }<br>
+      break;<br>
+    case inTag:<br>
+      *dst++ = *src;<br>
+      if ((src + 1) != srcStr.end() && *src == '&gt;' && *(src + 1) != '&lt;')<br>
+      {<br>
+        state = inText;<br>
+      }<br>
+      break;<br>
+    case inText:<br>
+      if (*src == '&lt;')<br>
+      {<br>
+        *dst++ = *src;<br>
+        state = inTag;<br>
+      }<br>
+      else if (!(*(dst - 1) == '&gt;' && isspace(*src, loc)))<br>
+      {<br>
+        *dst++ = *src;<br>
+      }<br>
+      break;<br>
+    }<br>
+  }<br>
+  srcStr.erase(dst, srcStr.end());<br>
+}</div><br>
+//----&lt; wrap text elements in quotes so they become one token &gt;--------------<br>
+<br>
+std::string XmlParser::enquoteText(const std::string& src)<br>
+{<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+  std::string temp;<br>
+  temp.push_back(src[0]);<br>
+  for (size_t i = 1; i &lt; src.size(); ++i)<br>
+  {<br>
+    temp.push_back(src[i]);<br>
+    if (src[i] == '&gt;' && src[i + 1] != '&lt;')<br>
+      if (i + 1 &lt; src.size())  // don't quote end<br>
+        temp.push_back('\"');<br>
+    if (src[i + 1] == '&lt;' && src[i] != '&gt;')<br>
+      temp.push_back('\"');<br>
+  }<br>
+  return temp;<br>
+}</div><br>
+//----&lt; remove quotes, if any, from text string &gt;----------------------------<br>
+<br>
+std::string XmlParser::dequoteText(const std::string& src)<br>
+{<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+  std::string temp;<br>
+  for (size_t i = 0; i &lt; src.size(); ++i)<br>
+    if (src[i] != '\"' && src[i] != '\'')<br>
+      temp.push_back(src[i]);<br>
+  return temp;<br>
+}</div><br>
+//----&lt; initialize XmlParser object with string ready for parsing &gt;----------<br>
+<br>
+XmlParser::XmlParser(const std::string& src, sourceType type) : src_(src)<br>
+{<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+  if (type == file)<br>
+    src_ = textFileToString(src_);<br>
+  compress(src_);<br>
+  src_ = enquoteText(src_);<br>
+  pToker_ = new Toker(src_, false);<br>
+  pToker_-&gt;setMode(Toker::xml);<br>
+  pXmlParts_ = new XmlParts(pToker_);<br>
+}</div><br>
+//----&lt; extract attributes, if any, from XmlParts token collection &gt;---------<br>
+<br>
+void XmlParser::extractAttributes()<br>
+{<button id ="994"onclick="myFunction6();toggleText6(this.id); ">-</button><div id = "myDIV6"><br>
+  attribs_.clear();<br>
+  XmlParts xmlParts = *pXmlParts_;<br>
+  for (size_t pos = 0; pos &lt; (size_t)xmlParts.length(); ++pos)<br>
+  {<br>
+    if (xmlParts[pos] == "=")<br>
+    {<br>
+      auto item = attrib(xmlParts[pos - 1], xmlParts[pos + 1]);<br>
+      attribs_.push_back(item);<br>
+    }<br>
+  }<br>
+}</div><br>
+//----&lt; display all attribute name-value pairs in current XmlParts &gt;---------<br>
+<br>
+void XmlParser::showAttributes()<br>
+{<button id ="993"onclick="myFunction7();toggleText7(this.id); ">-</button><div id = "myDIV7"><br>
+  if (attribs_.size() == 0)<br>
+    return;<br>
+  for (size_t i = 0; i &lt; attribs_.size(); ++i)<br>
+  {<br>
+    std::cout &lt;&lt; "\n      " &lt;&lt; attribs_[i].first &lt;&lt; ", " &lt;&lt; attribs_[i].second;<br>
+  }<br>
+}</div><br>
+//----&lt; factory for XmlDeclaration node &gt;------------------------------------<br>
+<br>
+XmlParser::sPtr XmlParser::createXmlDeclar()<br>
+{<button id ="992"onclick="myFunction8();toggleText8(this.id); ">-</button><div id = "myDIV8"><br>
+  extractAttributes();<br>
+  sPtr pDeclar = makeXmlDeclarElement();<br>
+  for (auto item : attribs_)<br>
+  {<br>
+    std::string name = item.first;<br>
+    std::string value = dequoteText(item.second);<br>
+    pDeclar-&gt;addAttrib(name, value);<br>
+  }<br>
+  if (verbose_)<br>
+  {<br>
+    std::cout &lt;&lt; "\n  " &lt;&lt; pXmlParts_-&gt;show();<br>
+    std::cout &lt;&lt; "\n    xml declaration";<br>
+    showAttributes();<br>
+  }<br>
+  return pDeclar;<br>
+}</div><br>
+//----&lt; factory for Processing Instruction node &gt;----------------------------<br>
+<br>
+XmlParser::sPtr XmlParser::createProcInstr()<br>
+{<button id ="991"onclick="myFunction9();toggleText9(this.id); ">-</button><div id = "myDIV9"><br>
+  extractAttributes();<br>
+  sPtr pProcInstr = makeProcInstrElement("");<br>
+  for (auto item : attribs_)<br>
+  {<br>
+    std::string name = item.first;<br>
+    std::string value = dequoteText(item.second);<br>
+    pProcInstr-&gt;addAttrib(name, value);<br>
+  }<br>
+  if (verbose_)<br>
+  {<br>
+    std::cout &lt;&lt; "\n  " &lt;&lt; pXmlParts_-&gt;show();<br>
+    std::cout &lt;&lt; "\n    processing instruction";<br>
+    showAttributes();<br>
+  }<br>
+  return pProcInstr;<br>
+}</div><br>
+//----&lt; factory for Comment node &gt;-------------------------------------------<br>
+<br>
+XmlParser::sPtr XmlParser::createComment()<br>
+{<button id ="990"onclick="myFunction10();toggleText10(this.id); ">-</button><div id = "myDIV10"><br>
+  std::string comment;<br>
+  XmlParts& xmlParts = *pXmlParts_;<br>
+  for (size_t i = 3; i &lt; (size_t)xmlParts.length() - 2; ++i)<br>
+  {<br>
+    comment += xmlParts[i];<br>
+    if (i &lt; (size_t)xmlParts.length() - 3)<br>
+      comment += " ";<br>
+  }<br>
+  if (verbose_)<br>
+  {<br>
+    std::cout &lt;&lt; "\n  " &lt;&lt; pXmlParts_-&gt;show();<br>
+    std::cout &lt;&lt; "\n    comment";<br>
+    std::cout &lt;&lt; "\n      " &lt;&lt; comment;<br>
+  }<br>
+  sPtr pComment = makeCommentElement(comment);<br>
+  return pComment;<br>
+}</div><br>
+//----&lt; factory for Tagged Element node &gt;------------------------------------<br>
+<br>
+XmlParser::sPtr XmlParser::createTaggedElem()<br>
+{<button id ="989"onclick="myFunction11();toggleText11(this.id); ">-</button><div id = "myDIV11"><br>
+  XmlParts& xmlParts = *pXmlParts_;<br>
+  sPtr pTaggedElem = makeTaggedElement(xmlParts[1]);<br>
+  extractAttributes();<br>
+  for (auto item : attribs_)<br>
+  {<br>
+    std::string name = item.first;<br>
+    std::string value = dequoteText(item.second);<br>
+    pTaggedElem-&gt;addAttrib(name, value);<br>
+  }<br>
+  if (verbose_)<br>
+  {<br>
+    std::cout &lt;&lt; "\n  " &lt;&lt; pXmlParts_-&gt;show();<br>
+    std::cout &lt;&lt; "\n    tagged element " &lt;&lt; "\"" &lt;&lt; xmlParts[1] &lt;&lt; "\"";<br>
+    showAttributes();<br>
+  }<br>
+  return pTaggedElem;<br>
+}</div><br>
+//----&lt; factory for Text Element node &gt;--------------------------------------<br>
+<br>
+XmlParser::sPtr XmlParser::createTextElem()<br>
+{<button id ="988"onclick="myFunction12();toggleText12(this.id); ">-</button><div id = "myDIV12"><br>
+  XmlParts& xmlParts = *pXmlParts_;<br>
+  std::string text = dequoteText(xmlParts[0]);<br>
+  sPtr pTextElem = makeTextElement(text);<br>
+  if (verbose_)<br>
+  {<br>
+    std::cout &lt;&lt; "\n  " &lt;&lt; pXmlParts_-&gt;show();<br>
+    std::cout &lt;&lt; "\n    Text Element";<br>
+  }<br>
+  return pTextElem;<br>
+}</div><br>
+//----&lt; show end element parts &gt;---------------------------------------------<br>
+<br>
+void XmlParser::processEndElem()<br>
+{<button id ="987"onclick="myFunction13();toggleText13(this.id); ">-</button><div id = "myDIV13"><br>
+  if (verbose_)<br>
+  {<br>
+    std::cout &lt;&lt; "\n  " &lt;&lt; pXmlParts_-&gt;show();<br>
+    std::cout &lt;&lt; "\n    end element";<br>
+  }<br>
+}</div><br>
+//----&lt; parse markup and add to XML parse tree &gt;-----------------------------<br>
+<br>
+void XmlParser::processMarkup(ElemStack& elemStack)<br>
+{<button id ="986"onclick="myFunction14();toggleText14(this.id); ">-</button><div id = "myDIV14"><br>
+  XmlParts& xmlParts = *pXmlParts_;<br>
+  if (xmlParts[1] == "?")<br>
+  {<br>
+    if (xmlParts[2] == "xml")<br>
+    {<br>
+      sPtr pDeclar = createXmlDeclar();<br>
+      elemStack.top()-&gt;addChild(pDeclar);<br>
+    }<br>
+    else<br>
+    {<br>
+      sPtr pProcInstr = createProcInstr();<br>
+      elemStack.top()-&gt;addChild(pProcInstr);<br>
+    }<br>
+    if (verbose_) std::cout &lt;&lt; "\n";<br>
+    return;<br>
+  }<br>
+  if (xmlParts[1] == "!")<br>
+  {<br>
+    sPtr pComment = createComment();<br>
+    elemStack.top()-&gt;addChild(pComment);<br>
+    if (verbose_) std::cout &lt;&lt; "\n";<br>
+    return;<br>
+  }<br>
+  if (xmlParts[1] == "/")<br>
+  {<br>
+    processEndElem();<br>
+    elemStack.pop();<br>
+  }<br>
+  else<br>
+  {<br>
+    sPtr pTaggedElem = createTaggedElem();<br>
+    elemStack.top()-&gt;addChild(pTaggedElem);<br>
+    elemStack.push(pTaggedElem);<br>
+  }<br>
+  if (verbose_) std::cout &lt;&lt; "\n";<br>
+  return;<br>
+}</div><br>
+//----&lt; add text to XML parse tree &gt;-----------------------------------------<br>
+<br>
+void XmlParser::processText(ElemStack& elemStack)<br>
+{<button id ="985"onclick="myFunction15();toggleText15(this.id); ">-</button><div id = "myDIV15"><br>
+  sPtr pTextElem = createTextElem();<br>
+  elemStack.top()-&gt;addChild(pTextElem);<br>
+  if (verbose_) std::cout &lt;&lt; "\n";<br>
+}</div><br>
+//----&lt; build XmlDocument from XmlParts &gt;------------------------------------<br>
+<br>
+XmlDocument* XmlParser::buildDocument()<br>
+{<button id ="984"onclick="myFunction16();toggleText16(this.id); ">-</button><div id = "myDIV16"><br>
+  XmlDocument* pDoc = new XmlDocument(makeDocElement());<br>
+  using sPtr = std::shared_ptr &lt; AbstractXmlElement &gt;;<br>
+  sPtr pDocElem = pDoc-&gt;docElement();<br>
+<br>
+  std::stack &lt;sPtr&gt; elemStack_;<br>
+  elemStack_.push(pDocElem);<br>
+<br>
+  std::locale loc;<br>
+  XmlParts& xmlParts = *pXmlParts_;<br>
+  while (xmlParts.get())<br>
+  {<br>
+    if (xmlParts[0] == "&lt;")<br>
+    {<br>
+      processMarkup(elemStack_);<br>
+      continue;<br>
+    }<br>
+    if (xmlParts[0][0] == '\"' || isalnum(xmlParts[0][0]) || isspace(xmlParts[0][0], loc))<br>
+    {<br>
+      processText(elemStack_);<br>
+      continue;<br>
+    }<br>
+    throw(std::exception("ill-formed XML"));<br>
+  }<br>
+  if(verbose_) std::cout &lt;&lt; "\n";<br>
+  return pDoc;<br>
+}</div><br>
+<br>
+#ifdef TEST_XMLPARSER<br>
+<br>
+using namespace::Utilities;<br>
+using Utils = StringHelper;<br>
+<br>
+int main()<br>
+{<button id ="983"onclick="myFunction17();toggleText17(this.id); ">-</button><div id = "myDIV17"><br>
+  Utils::Title("Testing XmlParser");<br>
+  putline();<br>
+  std::string src = "../XmlElementParts/LectureNote.xml";<br>
+  XmlParser parser(src);<br>
+  parser.verbose();<br>
+  Utils::title("Compressed form of formatted XML:");<br>
+  std::cout &lt;&lt; "\n" &lt;&lt; src &lt;&lt; "\n";<br>
+  Utils::title("Parsing compressed XML:");<br>
+  XmlDocument* pDoc = parser.buildDocument();<br>
+  Utils::title("Resulting XML Parse Tree:");<br>
+  std::cout &lt;&lt; "\n" &lt;&lt; pDoc-&gt;toString();<br>
+  std::cout &lt;&lt; "\n\n";<br>
+}</div><br>
+<br>
+#endif<br>
+<br>
+<//pre><//body><//html>

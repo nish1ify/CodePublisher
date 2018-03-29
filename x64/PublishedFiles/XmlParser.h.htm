@@ -1,0 +1,117 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "FileSystem.h.htm">FileSystem.h - </a><br><a href = "Tokenizer.h.htm">Tokenizer.h - </a><br><a href = "XmlDocument.cpp.htm">XmlDocument.cpp - </a><br><a href = "XmlDocument.h.htm">XmlDocument.h - </a><br><a href = "XmlElement.h.htm">XmlElement.h - </a><br><a href = "XmlParser.h.htm">XmlParser.h - </a><br><a href = "itokcollection.h.htm">itokcollection.h - </a><br><a href = "xmlElementParts.h.htm">xmlElementParts.h - </a><br><br><br>#ifndef XMLPARSER_H<br>
+#define XMLPARSER_H<br>
+///////////////////////////////////////////////////////////////////<br>
+// XmlParser.h - build XML parse tree                            //<br>
+// ver 1.3                                                       //<br>
+// Application: Support for XmlDocument, Summer 2015             //<br>
+// Platform:    Dell XPS 2720, Win 8.1 Pro, Visual Studio 2013   //<br>
+// Author:      Jim Fawcett, CST 4-187, 443-3948                 //<br>
+//              jfawcett@twcny.rr.com                            //<br>
+///////////////////////////////////////////////////////////////////<br>
+/*<br>
+* Package Operations:<br>
+* -------------------<br>
+* The XML Document Model is essentially a program-friendly wrapper<br>
+* around an Abstract Syntax Tree (AST) used to contain the results <br>
+* of parsing XML markup.<br>
+*<br>
+* This package provides parsing of an XML file or string and builds<br>
+* it's AST.  See the prologue of the XmlDocument package for more<br>
+* details.<br>
+*<br>
+* XmlParser objects throw if given an invalid path to an XML file.<br>
+*<br>
+* Required Files:<br>
+* ---------------<br>
+*   - XmlParser.h, XmlParser.cpp, <br>
+*   - XmlElementParts.h, XmlElementParts.cpp<br>
+*   - XmlDocument.h, XmlDocument.cpp, XmlElement.h, XmlElement.cpp<br>
+*   - ITokenCollection.h, Tokenizer.h, Tokenizer.cpp<br>
+*   - Utilities.Lib<br>
+<br>
+* Build Process:<br>
+* --------------<br>
+*   devenv XmlParser.sln /debug rebuild<br>
+*<br>
+* Maintenance History:<br>
+* --------------------<br>
+* Ver 1.3 : 01 Jun 15<br>
+* - made constr src string const<br>
+* - added src_ member string<br>
+* Ver 1.2 : 31 May 15<br>
+* - factored parsing code to reduce size and complexity<br>
+* - renamed a couple of methods to improve readability<br>
+* Ver 1.1 : 30 May 15<br>
+* - reconfigured code to use and support repository storage<br>
+*   - using Repository::Utilities<br>
+*   - added Repository\include to Environment's Path to support<br>
+*     #include &lt;utilities&gt;<br>
+* Ver 1.0 : 28 May 15<br>
+* - first release<br>
+*<br>
+* ToDo:<br>
+* -----<br>
+* - polish into production code<br>
+*   - rigourous testing<br>
+*/<br>
+<br>
+#include "../XmlElementParts/itokcollection.h"<br>
+#include "../XmlElementParts/xmlElementParts.h"<br>
+#include "../XmlElement/XmlElement.h"<br>
+#include &lt;vector&gt;<br>
+#include &lt;stack&gt;<br>
+#include &lt;memory&gt;<br>
+<br>
+namespace XmlProcessing<br>
+{<br>
+  class XmlDocument;<br>
+<br>
+  class XmlParser<br>
+  {<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+  public:<br>
+    using sPtr = std::shared_ptr &lt; AbstractXmlElement &gt; ;<br>
+    using attrib = std::pair &lt; std::string, std::string &gt; ;<br>
+    using attribs = std::vector &lt;attrib&gt; ;<br>
+    using ElemStack = std::stack &lt; sPtr &gt; ;<br>
+<br>
+    enum sourceType { file, str };<br>
+    XmlParser(const std::string& src, sourceType type = file);<br>
+    bool good();<br>
+    XmlDocument* buildDocument();<br>
+    bool verbose(bool verb = true);<br>
+  private:<br>
+    std::string textFileToString(const std::string& fileSpec);<br>
+    void compress(std::string& xmlStr);<br>
+    std::string enquoteText(const std::string& src);<br>
+    std::string dequoteText(const std::string& src);<br>
+    sPtr createXmlDeclar();<br>
+    sPtr createProcInstr();<br>
+    sPtr createComment();<br>
+    sPtr createTaggedElem();<br>
+    sPtr createTextElem();<br>
+    void processMarkup(ElemStack& stack);<br>
+    void processText(ElemStack& stack);<br>
+    void processEndElem();<br>
+    void extractAttributes();<br>
+    void showAttributes();<br>
+    attribs& attributes();<br>
+    attribs attribs_;<br>
+    ITokCollection* pTokColl_;<br>
+    XmlParts* pXmlParts_;<br>
+    Toker* pToker_ = nullptr;<br>
+    std::string src_;<br>
+    bool verbose_ = false;<br>
+    bool good_ = false;<br>
+  }</div>;<br>
+<br>
+  inline bool XmlParser::good() { return good_; }<br>
+  inline XmlParser::attribs& XmlParser::attributes() { return attribs_; }<br>
+  inline bool XmlParser::verbose(bool verb) <br>
+  { <br>
+    bool temp = verbose_;  <br>
+    verbose_ = verb; <br>
+    return temp; <br>
+  }</div><br>
+}<br>
+#endif<br>
+<//pre><//body><//html>

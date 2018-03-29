@@ -1,0 +1,36 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "StrongComponent.h.htm">StrongComponent.h - </a><br><a href = "Test2.cpp.htm">Test2.cpp - </a><br><br><br>//Implement file StrongComponent.h<br>
+<br>
+#ifdef SCC<br>
+<br>
+<br>
+#include "StrongComponent.h"<br>
+<br>
+int main()<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+<br>
+<br>
+	std::vector&lt;std::vector&lt;int&gt;&gt; revfileMap;<br>
+	cout &lt;&lt; "\nSCCs in first graph \n";<br>
+	Graph g1(5);<br>
+	g1.addEdge(1, 0);<br>
+	g1.addEdge(0, 2);<br>
+	g1.addEdge(2, 1);<br>
+	g1.addEdge(0, 3);<br>
+	g1.addEdge(3, 4);<br>
+   revfileMap = g1.SCC();<br>
+<br>
+	cout &lt;&lt; "\n\n";<br>
+    for (std::vector&lt;int&gt; r : revfileMap)<br>
+	{<br>
+		for (int a : r)<br>
+		{<br>
+			cout &lt;&lt; " " &lt;&lt; a;<br>
+<br>
+		}<br>
+		cout &lt;&lt; "\n";<br>
+	}<br>
+	return 0;<br>
+}</div><br>
+<br>
+#endif<br>
+<//pre><//body><//html>

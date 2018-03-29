@@ -1,0 +1,108 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "Cpp11-BlockingQueue.cpp.htm">Cpp11-BlockingQueue.cpp - </a><br><a href = "FileSystem.cpp.htm">FileSystem.cpp - </a><br><a href = "Test1.cpp.htm">Test1.cpp - </a><br><a href = "Utilities.cpp.htm">Utilities.cpp - </a><br><a href = "Utilities.h.htm">Utilities.h - </a><br><br><br>#ifndef UTILITIES_H<br>
+#define UTILITIES_H<br>
+///////////////////////////////////////////////////////////////////////<br>
+// Utilities.h - small, generally useful, helper classes             //<br>
+// ver 1.4                                                           //<br>
+// Language:    C++, Visual Studio 2015                              //<br>
+// Platform:    Dell XPS 8900, Windows 10                            //<br>
+// Application: Most Projects, CSE687 - Object Oriented Design       //<br>
+// Author:      Jim Fawcett, Syracuse University, CST 4-187          //<br>
+//              jfawcett@twcny.rr.com                                //<br>
+///////////////////////////////////////////////////////////////////////<br>
+/*<br>
+* Package Operations:<br>
+* -------------------<br>
+* This package provides classes StringHelper and Converter and a global<br>
+* function putline().  This class will be extended continuously for <br>
+* awhile to provide convenience functions for general C++ applications.<br>
+*<br>
+* Build Process:<br>
+* --------------<br>
+* Required Files: Utilities.h, Utilities.cpp<br>
+*<br>
+* Build Command: devenv Utilities.sln /rebuild debug<br>
+*<br>
+* Maintenance History:<br>
+* --------------------<br>
+* ver 1.4 : 26 Feb 2017<br>
+* - changed StringHelper::split to use isspace from &lt;locale&gt; instead of &lt;cctype&gt;<br>
+* ver 1.3 : 12 Aug 2016<br>
+* - added overloads of title functions for std::ostringstreams<br>
+* ver 1.2 : 10 Aug 2016<br>
+* - added new function StringHelper::sTitle(...)<br>
+* - changed the way string arguments are passed to each of the<br>
+*   title functions<br>
+* ver 1.1 : 06 Feb 2015<br>
+* - fixed bug in split which turns a comma separated string into<br>
+*   a vector of tokens.<br>
+* - added comments<br>
+* ver 1.0 : 05 Feb 2016<br>
+* - first release<br>
+*<br>
+* Planned Additions and Changes:<br>
+* ------------------------------<br>
+* - none yet<br>
+*/<br>
+#include &lt;string&gt;<br>
+#include &lt;vector&gt;<br>
+#include &lt;sstream&gt;<br>
+#include &lt;functional&gt;<br>
+<br>
+namespace Utilities<br>
+{<br>
+  class test<br>
+  {<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+  public:<br>
+    std::vector&lt;std::string&gt; publicVector;<br>
+  }</div>;<br>
+<br>
+  class StringHelper<br>
+  {<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+  public:<br>
+    static std::vector&lt;std::string&gt; split(const std::string& src);<br>
+    static void Title(std::string src, std::ostream&  out = std::cout);<br>
+    static void Title(std::string src, std::ostringstream& out);<br>
+    static void title(std::string src, std::ostream& out = std::cout);<br>
+    static void title(std::string src, std::ostringstream& out);<br>
+    static void sTitle(<br>
+      std::string src, size_t offset, size_t width, std::ostream& out = std::cout, char underline = '-'<br>
+    );<br>
+    static void sTitle(<br>
+      std::string src, size_t offset, size_t width, std::ostringstream& out, char underline = '-'<br>
+    );<br>
+  }</div>;<br>
+<br>
+  void putline();<br>
+<br>
+  template &lt;typename T&gt;<br>
+  class Converter<br>
+  {<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+  public:<br>
+    static std::string toString(const T& t);<br>
+    static T toValue(const std::string& src);<br>
+  }</div>;<br>
+<br>
+  template &lt;typename T&gt;<br>
+  std::string Converter&lt;T&gt;::toString(const T& t)<br>
+  {<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+    std::ostringstream out;<br>
+    out &lt;&lt; t;<br>
+    return out.str();<br>
+  }</div><br>
+<br>
+  template&lt;typename T&gt;<br>
+  T Converter&lt;T&gt;::toValue(const std::string& src)<br>
+  {<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+    std::istringstream in(src);<br>
+    T t;<br>
+    in &gt;&gt; t;<br>
+    return t;<br>
+  }</div><br>
+<br>
+  <br>
+<br>
+}<br>
+<br>
+<br>
+#endif<br>
+<//pre><//body><//html>

@@ -1,0 +1,108 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "Cpp11-BlockingQueue.cpp.htm">Cpp11-BlockingQueue.cpp - </a><br><a href = "FileSystem.cpp.htm">FileSystem.cpp - </a><br><a href = "Test1.cpp.htm">Test1.cpp - </a><br><a href = "Utilities.cpp.htm">Utilities.cpp - </a><br><a href = "Utilities.h.htm">Utilities.h - </a><br><br><br>///////////////////////////////////////////////////////////////////////<br>
+// Utilities.cpp - small, generally usefule, helper classes          //<br>
+// ver 1.2                                                           //<br>
+// Language:    C++, Visual Studio 2015                              //<br>
+// Application: Most Projects, CSE687 - Object Oriented Design       //<br>
+// Author:      Jim Fawcett, Syracuse University, CST 4-187          //<br>
+//              jfawcett@twcny.rr.com                                //<br>
+///////////////////////////////////////////////////////////////////////<br>
+<br>
+#include &lt;cctype&gt;<br>
+#include &lt;iostream&gt;<br>
+#include "Utilities.h"<br>
+<br>
+using namespace Utilities;<br>
+<br>
+std::function&lt;void(const std::string&)&gt; Title =<br>
+  [](auto src) { StringHelper::Title(src, '='); };<br>
+<br>
+std::function&lt;void(const std::string&)&gt; title =<br>
+  [](auto src) { StringHelper::Title(src, '-'); };<br>
+<br>
+void StringHelper::title(const std::string& src)<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+  std::cout &lt;&lt; "\n  " &lt;&lt; src;<br>
+  std::cout &lt;&lt; "\n " &lt;&lt; std::string(src.size() + 2, '-');<br>
+}</div><br>
+<br>
+void StringHelper::Title(const std::string& src, char underline)<br>
+{<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+  std::cout &lt;&lt; "\n  " &lt;&lt; src;<br>
+  std::cout &lt;&lt; "\n " &lt;&lt; std::string(src.size() + 2, underline);<br>
+}</div><br>
+<br>
+std::vector&lt;std::string&gt; StringHelper::split(const std::string& src)<br>
+{<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+  std::vector&lt;std::string&gt; accum;<br>
+  std::string temp;<br>
+  size_t index = 0;<br>
+  do<br>
+  {<br>
+    while ((isspace(src[index]) || src[index] == ',') && src[index] != '\n')<br>
+    {<br>
+      ++index;<br>
+      if (temp.size() &gt; 0)<br>
+      {<br>
+        accum.push_back(temp);<br>
+        temp.clear();<br>
+      }<br>
+    }<br>
+    if(src[index] != '\0')<br>
+      temp += src[index];<br>
+  } while (index++ &lt; src.size());<br>
+  if(temp.size() &gt; 0)<br>
+    accum.push_back(temp);<br>
+  return accum;<br>
+}</div><br>
+<br>
+void Utilities::putline()<br>
+{<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+  std::cout &lt;&lt; "\n";<br>
+}</div><br>
+<br>
+#ifdef TEST_UTILITIES<br>
+<br>
+int main()<br>
+{<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+  Title("Testing Utilities Package");<br>
+  putline();<br>
+<br>
+  title("test StringHelper::split(std::string)");<br>
+<br>
+  std::string test = "a, \n, bc, de, efg, i, j k lm nopq rst";<br>
+  std::cout &lt;&lt; "\n  test string = " &lt;&lt; test;<br>
+  <br>
+  std::vector&lt;std::string&gt; result = StringHelper::split(test);<br>
+  <br>
+  std::cout &lt;&lt; "\n";<br>
+  for (auto item : result)<br>
+  {<br>
+    if (item == "\n")<br>
+      std::cout &lt;&lt; "\n  " &lt;&lt; "newline";<br>
+    else<br>
+      std::cout &lt;&lt; "\n  " &lt;&lt; item;<br>
+  }<br>
+  std::cout &lt;&lt; "\n";<br>
+<br>
+  title("test std::string Converter&lt;T&gt;::toString(T)");<br>
+<br>
+  std::string conv1 = Converter&lt;double&gt;::toString(3.1415927);<br>
+  std::string conv2 = Converter&lt;int&gt;::toString(73);<br>
+  std::string conv3 = Converter&lt;std::string&gt;::toString("a_test_string plus more");<br>
+<br>
+  std::cout &lt;&lt; "\n  Converting from values to strings: ";<br>
+  std::cout &lt;&lt; conv1 &lt;&lt; ", " &lt;&lt; conv2 &lt;&lt; ", " &lt;&lt; conv3;<br>
+  putline();<br>
+<br>
+  title("test T Converter&lt;T&gt;::toValue(std::string)");<br>
+<br>
+  std::cout &lt;&lt; "\n  Converting from strings to values: ";<br>
+  std::cout &lt;&lt; Converter&lt;double&gt;::toValue(conv1) &lt;&lt; ", ";<br>
+  std::cout &lt;&lt; Converter&lt;int&gt;::toValue(conv2) &lt;&lt; ", ";<br>
+  std::cout &lt;&lt; Converter&lt;std::string&gt;::toValue(conv3);<br>
+<br>
+  std::cout &lt;&lt; "\n\n";<br>
+  return 0;<br>
+}</div><br>
+#endif<br>
+<//pre><//body><//html>

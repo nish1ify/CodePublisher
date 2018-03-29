@@ -1,0 +1,120 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "Cpp11-BlockingQueue.h.htm">Cpp11-BlockingQueue.h - </a><br><a href = "FileSystem.cpp.htm">FileSystem.cpp - </a><br><a href = "Logger.h.htm">Logger.h - </a><br><br><br>#ifndef LOGGER_H<br>
+#define LOGGER_H<br>
+/////////////////////////////////////////////////////////////////////<br>
+// Logger.h - log text messages to std::ostream                    //<br>
+// ver 1.2                                                         //<br>
+//-----------------------------------------------------------------//<br>
+// Jim Fawcett (c) copyright 2015                                  //<br>
+// All rights granted provided this copyright notice is retained   //<br>
+//-----------------------------------------------------------------//<br>
+// Language:    C++, Visual Studio 2015                            //<br>
+// Application: Several Projects, CSE687 - Object Oriented Design  //<br>
+// Author:      Jim Fawcett, Syracuse University, CST 4-187        //<br>
+//              jfawcett@twcny.rr.com                              //<br>
+/////////////////////////////////////////////////////////////////////<br>
+/*<br>
+* Package Operations:<br>
+* -------------------<br>
+* This package supports logging for multiple concurrent clients to a<br>
+* single std::ostream.  It does this be enqueuing messages in a<br>
+* blocking queue and dequeuing with a single thread that writes to<br>
+* the std::ostream.<br>
+*<br>
+* It provides two logging classes, a non-template Logger class with <br>
+* instance methods, and a template class StaticLogger&lt;int&gt; with static <br>
+* methods.<br>
+*<br>
+* In most of my code I use the following definitions:<br>
+* <br>
+*   using Rslt = StaticLogger&lt;0&gt;;    // show program results<br>
+*   using Demo = StaticLogger&lt;1&gt;;    // show demonstration outputs<br>
+*   using Dbug = StaticLogger&lt;2&gt;;    // show debugging outputs<br>
+*<br>
+* That allows a user to determine the kinds of outputs the program<br>
+* presents based on which of these loggers are started, e.g., by<br>
+* changing only a couple of lines of code.<br>
+*<br>
+* Build Process:<br>
+* --------------<br>
+* Required Files: Logger.h, Logger.cpp, Utilities.h, Utilities.cpp<br>
+*<br>
+* Build Command: devenv logger.sln /rebuild debug<br>
+*<br>
+* Maintenance History:<br>
+* --------------------<br>
+* ver 1.2 : 27 Aug 2016<br>
+* - added flushing of streams in Logger::flush()<br>
+* - call thread join on stop instead of spin locking<br>
+* ver 1.1 : 06 Aug 2016<br>
+* - added member function flush() to wait for output to complete<br>
+* ver 1.0 : 22 Feb 2016<br>
+* - first release<br>
+*<br>
+* Planned Additions and Changes:<br>
+* ------------------------------<br>
+* - fix pause locking<br>
+*/<br>
+<br>
+#include &lt;iostream&gt;<br>
+#include &lt;string&gt;<br>
+#include &lt;vector&gt;<br>
+#include &lt;thread&gt;<br>
+#include "../Cpp11-BlockingQueue/Cpp11-BlockingQueue.h"<br>
+<br>
+namespace Logging<br>
+{<br>
+  class Logger<br>
+  {<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+  public:<br>
+    Logger() {}<br>
+    void attach(std::ostream* pOut);<br>
+    void start();<br>
+    bool running();<br>
+    void pause(bool doPause);<br>
+    bool paused();<br>
+    void flush();<br>
+    void stop(const std::string& msg = "");<br>
+    void wait();<br>
+    void write(const std::string& msg);<br>
+    void title(const std::string& msg, char underline = '-');<br>
+    ~Logger();<br>
+    Logger(const Logger&) = delete;<br>
+    Logger& operator=(const Logger&) = delete;<br>
+  private:<br>
+    std::thread* _pThr;<br>
+    std::vector&lt;std::ostream*&gt; streams_;<br>
+    Async::BlockingQueue&lt;std::string&gt; _queue;<br>
+    bool _ThreadRunning = false;<br>
+    bool _Paused = false;<br>
+  }</div>;<br>
+<br>
+  template&lt;int i&gt;<br>
+  class StaticLogger<br>
+  {<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+  public:<br>
+    static void attach(std::ostream* pOut) { _logger.attach(pOut); }<br>
+    static void start() { _logger.start(); }<br>
+    static bool running() { return _logger.running(); }<br>
+    static void pause(bool doPause) { _logger.pause(doPause); }<br>
+    static void paused() { return _logger.paused(); }<br>
+    static void flush() { _logger.flush(); }<br>
+    static void stop(const std::string& msg = "") { _logger.stop(msg); }<br>
+    static void wait() { _logger.wait(); }<br>
+    static void write(const std::string& msg) { _logger.write(msg); }<br>
+    static void title(const std::string& msg, char underline = '-') { _logger.title(msg, underline); }<br>
+    static Logger& instance() { return _logger; }<br>
+    StaticLogger(const StaticLogger&) = delete;<br>
+    StaticLogger& operator=(const StaticLogger&) = delete;<br>
+  private:<br>
+    static Logger _logger;<br>
+  }</div>;<br>
+<br>
+  template&lt;int i&gt;<br>
+  Logger StaticLogger&lt;i&gt;::_logger;<br>
+<br>
+  using Rslt = Logging::StaticLogger&lt;0&gt;;<br>
+  using Demo = Logging::StaticLogger&lt;1&gt;;<br>
+  using Dbug = Logging::StaticLogger&lt;2&gt;;<br>
+}<br>
+#endif<br>
+<//pre><//body><//html>

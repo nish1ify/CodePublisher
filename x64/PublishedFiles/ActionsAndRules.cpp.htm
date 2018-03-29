@@ -1,0 +1,63 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "ActionsAndRules.h.htm">ActionsAndRules.h - </a><br><br><br>/////////////////////////////////////////////////////////////////////<br>
+//  ActionsAndRules.cpp - implements new parsing rules and actions //<br>
+//  ver 3.3                                                        //<br>
+//  Language:      Visual C++ 2008, SP1                            //<br>
+//  Platform:      Dell Precision T7400, Vista Ultimate SP1        //<br>
+//  Application:   Prototype for CSE687 Pr1, Sp09                  //<br>
+//  Author:        Jim Fawcett, CST 4-187, Syracuse University     //<br>
+//                 (315) 443-3948, jfawcett@twcny.rr.com           //<br>
+/////////////////////////////////////////////////////////////////////<br>
+<br>
+#include "ActionsAndRules.h"<br>
+#include "../Utilities/Utilities.h"<br>
+<br>
+using namespace CodeAnalysis;<br>
+<br>
+Repository* Repository::instance;<br>
+<br>
+#ifdef TEST_ACTIONSANDRULES<br>
+<br>
+#include &lt;iostream&gt;<br>
+#include "ActionsAndRules.h"<br>
+#include "Tokenizer.h"<br>
+#include "SemiExpression.h"<br>
+<br>
+int main(int argc, char* argv[])<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+  std::cout &lt;&lt; "\n  Testing ActionsAndRules class\n "<br>
+            &lt;&lt; std::string(30,'=') &lt;&lt; std::endl;<br>
+<br>
+  try<br>
+  {<br>
+    Utilities::StringHelpers::Title(<br>
+      "Actions and Rules - these construction tests are no longer valid"<br>
+    );<br>
+    //PreprocStatement pps;<br>
+    //pps.addAction(&ppq);<br>
+<br>
+    //FunctionDefinition fnd;<br>
+    //PrettyPrintToQ pprtQ(resultsQ);<br>
+    //fnd.addAction(&pprtQ);<br>
+<br>
+    //Toker toker("../ActionsAndRules.h");<br>
+    //SemiExp se(&toker);<br>
+    //Parser parser(&se);<br>
+    //parser.addRule(&pps);<br>
+    //parser.addRule(&fnd);<br>
+    //while(se.get())<br>
+    //  parser.parse();<br>
+    //size_t len = resultsQ.size();<br>
+    //for(size_t i=0; i&lt;len; ++i)<br>
+    //{<br>
+    //  std::cout &lt;&lt; "\n  " &lt;&lt; resultsQ.front().c_str();<br>
+    //  resultsQ.pop();<br>
+    //}<br>
+    std::cout &lt;&lt; "\n\n";<br>
+  }<br>
+  catch(std::exception& ex)<br>
+  {<br>
+    std::cout &lt;&lt; "\n\n  " &lt;&lt; ex.what() &lt;&lt; "\n\n";<br>
+  }<br>
+}</div><br>
+#endif<br>
+<//pre><//body><//html>

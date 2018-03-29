@@ -1,0 +1,390 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "Convert.cpp.htm">Convert.cpp - </a><br><a href = "GrammarHelpers.cpp.htm">GrammarHelpers.cpp - </a><br><a href = "SemiExp.h.htm">SemiExp.h - </a><br><a href = "StrHelper.h.htm">StrHelper.h - </a><br><a href = "Tokenizer.h.htm">Tokenizer.h - </a><br><a href = "itokcollection.h.htm">itokcollection.h - </a><br><br><br>///////////////////////////////////////////////////////////////////////<br>
+// SemiExpression.cpp - collect tokens for analysis                  //<br>
+// ver 3.9                                                           //<br>
+// Language:    C++, Visual Studio 2015                              //<br>
+// Platform:    Dell XPS 8900, Windows 10                            //<br>
+// Application: Parser component, CSE687 - Object Oriented Design    //<br>
+// Author:      Jim Fawcett, Syracuse University, CST 4-187          //<br>
+//              jfawcett@twcny.rr.com                                //<br>
+///////////////////////////////////////////////////////////////////////<br>
+<br>
+#include &lt;fstream&gt;<br>
+#include &lt;iostream&gt;<br>
+#include &lt;sstream&gt;<br>
+#include &lt;string&gt;<br>
+#include &lt;vector&gt;<br>
+#include &lt;algorithm&gt;<br>
+#include &lt;unordered_map&gt;<br>
+#include &lt;exception&gt;<br>
+#include &lt;locale&gt;<br>
+#include "SemiExp.h"<br>
+#include "../Tokenizer/Tokenizer.h"<br>
+<br>
+using namespace Scanner;<br>
+using Token = std::string;<br>
+<br>
+//----&lt; initialize semiExpression with existing toker reference &gt;----<br>
+<br>
+SemiExp::SemiExp(Toker* pToker) : _pToker(pToker) {}<br>
+<br>
+//----&lt; copy ctor but don't copy pointer to toker &gt;------------------<br>
+/*<br>
+*  Allows us to copy tokens for manipulation in grammer methods<br>
+*  but does not give a complete copy.<br>
+*/<br>
+SemiExp::SemiExp(const SemiExp& se)<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+  _tokens = se._tokens;<br>
+  _pToker = nullptr;<br>
+  hasFor = false;<br>
+}</div><br>
+//----&lt; move constructor &gt;-------------------------------------------<br>
+<br>
+SemiExp::SemiExp(SemiExp&& se)<br>
+{<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+  _tokens = se._tokens;<br>
+  _pToker = se._pToker;<br>
+  hasFor = se.hasFor;<br>
+  se._tokens.clear();<br>
+  se._pToker = nullptr;<br>
+}</div><br>
+//----&lt; assigns tokens but does not assign pointer to toker &gt;--------<br>
+<br>
+SemiExp& SemiExp::operator=(const SemiExp& se)<br>
+{<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+  if (this != &se)<br>
+  {<br>
+    _tokens = se._tokens;<br>
+    _pToker = nullptr;<br>
+  }<br>
+  return *this;<br>
+}</div><br>
+//----&lt; move assignment &gt;--------------------------------------------<br>
+<br>
+SemiExp& SemiExp::operator=(SemiExp&& se)<br>
+{<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+  if (this != &se)<br>
+  {<br>
+    _tokens = se._tokens;<br>
+    _pToker = se._pToker;<br>
+    se._tokens.clear();<br>
+    se._pToker = nullptr;<br>
+  }<br>
+  return *this;<br>
+}</div><br>
+//----&lt; return iterator pointing to first token &gt;--------------------<br>
+<br>
+SemiExp::iterator SemiExp::begin() { return _tokens.begin(); }<br>
+<br>
+//----&lt; return iterator pointing one past last token &gt;---------------<br>
+<br>
+SemiExp::iterator SemiExp::end() { return _tokens.end(); }<br>
+<br>
+//----&lt; returns position of tok in semiExpression &gt;------------------<br>
+<br>
+size_t SemiExp::find(const std::string& tok, size_t offSet) const<br>
+{<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+  std::string debug = this-&gt;show();<br>
+  for (size_t i = offSet; i &lt; length(); ++i)<br>
+    if (_tokens[i] == tok)<br>
+      return i;<br>
+  return length();<br>
+}</div><br>
+//----&lt; push token onto back end of SemiExp &gt;------------------------<br>
+<br>
+void SemiExp::push_back(const std::string& tok)<br>
+{<button id ="994"onclick="myFunction6();toggleText6(this.id); ">-</button><div id = "myDIV6"><br>
+  _tokens.push_back(tok);<br>
+}</div><br>
+//----&lt; removes token passed as argument &gt;---------------------------<br>
+<br>
+bool SemiExp::remove(const std::string& tok)<br>
+{<button id ="993"onclick="myFunction7();toggleText7(this.id); ">-</button><div id = "myDIV7"><br>
+  std::vector&lt;Token&gt;::iterator iter = _tokens.begin();<br>
+  while (iter != _tokens.end())<br>
+  {<br>
+    if (tok == *iter)<br>
+    {<br>
+      _tokens.erase(iter);<br>
+      return true;<br>
+    }<br>
+    ++iter;<br>
+  }<br>
+  return false;<br>
+}</div><br>
+//----&lt; removes token at nth position of semiExpression -------------<br>
+<br>
+bool SemiExp::remove(size_t n)<br>
+{<button id ="992"onclick="myFunction8();toggleText8(this.id); ">-</button><div id = "myDIV8"><br>
+  if (n &lt; 0 || n &gt;= length())<br>
+    return false;<br>
+  std::vector&lt;Token&gt;::iterator iter = _tokens.begin() + n;<br>
+  _tokens.erase(iter);<br>
+  return true;<br>
+}</div><br>
+//----&lt; removes newlines from front of semiExpression &gt;--------------<br>
+<br>
+void SemiExp::trimFront()<br>
+{<button id ="991"onclick="myFunction9();toggleText9(this.id); ">-</button><div id = "myDIV9"><br>
+  while (length() &gt; 1)<br>
+  {<br>
+    if (_tokens[0] == "\n")<br>
+      remove(0);<br>
+    else<br>
+      break;<br>
+  }<br>
+}</div><br>
+//----&lt; removes newlines from semiExpression &gt;-----------------------<br>
+<br>
+void SemiExp::trim(bool removeComments)<br>
+{<button id ="990"onclick="myFunction10();toggleText10(this.id); ">-</button><div id = "myDIV10"><br>
+  if (removeComments)<br>
+  {<br>
+    size_t i = 0;<br>
+    while (i &lt; _tokens.size())<br>
+    {<br>
+      if (isComment(_tokens[i]))<br>
+        remove(i);<br>
+      else<br>
+        ++i;<br>
+    }<br>
+  }<br>
+  // remove junk chars that C# puts in first token of file<br>
+<br>
+  static std::locale loc;<br>
+<br>
+  while (_tokens.size() &gt; 1 && !isalnum(_tokens[0][0], loc) && !ispunct(_tokens[0][0], loc))<br>
+  {<br>
+    remove(0);<br>
+    if (_tokens.size() &lt; 2)<br>
+      break;<br>
+  }<br>
+  // remove newlines<br>
+<br>
+  std::vector&lt;std::string&gt;::iterator new_end;<br>
+  new_end = std::remove(_tokens.begin(), _tokens.end(), "\n");<br>
+  _tokens.erase(new_end, _tokens.end());<br>
+}</div><br>
+//----&lt; transform all tokens to lower case &gt;-------------------------<br>
+<br>
+void SemiExp::toLower()<br>
+{<button id ="989"onclick="myFunction11();toggleText11(this.id); ">-</button><div id = "myDIV11"><br>
+  for (auto& token : _tokens)<br>
+  {<br>
+    for (auto& chr : token)<br>
+    {<br>
+      chr = tolower(chr);<br>
+    }<br>
+  }<br>
+}</div><br>
+//----&lt; clear contents of SemiExp &gt;----------------------------------<br>
+<br>
+void SemiExp::clear()<br>
+{<button id ="988"onclick="myFunction12();toggleText12(this.id); ">-</button><div id = "myDIV12"><br>
+  _tokens.clear();<br>
+}</div><br>
+//----&lt; is this token a comment? &gt;-----------------------------------<br>
+<br>
+bool SemiExp::isComment(const std::string& tok) const<br>
+{<button id ="987"onclick="myFunction13();toggleText13(this.id); ">-</button><div id = "myDIV13"><br>
+  return _pToker-&gt;isComment(tok);<br>
+}</div><br>
+//----&lt; return count of newlines retrieved by Toker &gt;----------------<br>
+<br>
+size_t SemiExp::currentLineCount() const<br>
+{<button id ="986"onclick="myFunction14();toggleText14(this.id); ">-</button><div id = "myDIV14"><br>
+  if (_pToker == nullptr)<br>
+    return 0;<br>
+  /* <br>
+   *  Tokenizer has collected first non-state char when exiting eatChars()<br>
+   *  so we need to subtract 1 from the Toker's line count.<br>
+   */<br>
+  return _pToker-&gt;currentLineCount() - 1;<br>
+}</div><br>
+//----&lt; helps folding for expressions &gt;------------------------------<br>
+<br>
+bool SemiExp::isSemiColonBetweenParens() const<br>
+{<button id ="985"onclick="myFunction15();toggleText15(this.id); ">-</button><div id = "myDIV15"><br>
+  size_t openParenPosition = find("(");<br>
+  size_t semiColonPosition = find(";");<br>
+  size_t closedParenPosition = find(")");<br>
+<br>
+  if (openParenPosition &lt; semiColonPosition && semiColonPosition &lt; closedParenPosition)<br>
+    return true;<br>
+  return false;<br>
+}</div><br>
+//----&lt; fills semiExpression collection from attached toker &gt;--------<br>
+<br>
+bool SemiExp::get(bool clear)<br>
+{<button id ="984"onclick="myFunction16();toggleText16(this.id); ">-</button><div id = "myDIV16"><br>
+  bool ok = getHelper(clear);<br>
+<br>
+  if (hasFor && isSemiColonBetweenParens())<br>
+  {<br>
+    getHelper(false);  // add test for loop termination<br>
+    getHelper(false);  // add counter increment<br>
+  }<br>
+  return ok;<br>
+}</div><br>
+//----&lt; is token a SemiExpression terminator? &gt;----------------------<br>
+<br>
+bool SemiExp::isTerminator(const std::string& token) const<br>
+{<button id ="983"onclick="myFunction17();toggleText17(this.id); ">-</button><div id = "myDIV17"><br>
+  if (token == "{" || token == "}" || token == ";")<br>
+    return true;<br>
+<br>
+  if (token == "\n")<br>
+  {<br>
+    for (size_t i = 0; i &lt; length(); ++i)<br>
+   {<br>
+      if (_tokens[i] == "\n")<br>
+        continue;<br>
+      if (_tokens[i] == "#")<br>
+        return true;<br>
+      else <br>
+        return false;<br>
+    }<br>
+  }<br>
+<br>
+  if (length() &lt; 2)<br>
+    return false;<br>
+<br>
+  if (token == ":" && length() &gt; 1 && _tokens[length() - 2] == "public")<br>
+    return true;<br>
+<br>
+  if (token == ":" && length() &gt; 1 && _tokens[length() - 2] == "protected")<br>
+    return true;<br>
+<br>
+  if (token == ":" && length() &gt; 1 && _tokens[length() - 2] == "private")<br>
+    return true;<br>
+<br>
+  return false;<br>
+}</div><br>
+//----&lt; does all the work of collecting tokens for collection &gt;------<br>
+<br>
+bool SemiExp::getHelper(bool clear)<br>
+{<button id ="982"onclick="myFunction18();toggleText18(this.id); ">-</button><div id = "myDIV18"><br>
+  hasFor = false;<br>
+  if (_pToker == nullptr)<br>
+    throw(std::logic_error("no Toker reference"));<br>
+  if(clear)<br>
+    _tokens.clear();<br>
+  while (true)<br>
+  {<br>
+    std::string token = _pToker-&gt;getTok();<br>
+    if (token == "")<br>
+      break;<br>
+    _tokens.push_back(token);<br>
+<br>
+    if (token == "for")<br>
+      hasFor = true;<br>
+    <br>
+    if (isTerminator(token))<br>
+      return true;<br>
+  }<br>
+  return false;<br>
+}</div><br>
+//----&lt; clone tokens of existing SemiExp &gt;---------------------------<br>
+/*<br>
+*  Note:<br>
+*  - Returns pointer to new SemiExp on heap.  Application is<br>
+*    responsible for deleting.<br>
+*  - Does not clone pointer to _toker or hasToken members!<br>
+*/<br>
+ITokCollection* SemiExp::clone() const<br>
+{<button id ="981"onclick="myFunction19();toggleText19(this.id); ">-</button><div id = "myDIV19"><br>
+  SemiExp* pClone = new SemiExp;<br>
+  for (size_t i = 0; i &lt; length(); ++i)<br>
+    pClone-&gt;push_back(_tokens[i]);<br>
+  return pClone;<br>
+}</div><br>
+//----&lt; clone replaces tokens in caller with tokens of argument &gt;----<br>
+<br>
+void SemiExp::clone(const ITokCollection& se, size_t offSet)<br>
+{<button id ="980"onclick="myFunction20();toggleText20(this.id); ">-</button><div id = "myDIV20"><br>
+  _tokens.clear();<br>
+  for (size_t i = offSet; i &lt; se.length(); ++i)<br>
+  {<br>
+    push_back(se[i]);<br>
+  }<br>
+}</div><br>
+//----&lt; read only indexing of SemiExpression &gt;-----------------------<br>
+<br>
+Token SemiExp::operator[](size_t n) const<br>
+{<button id ="979"onclick="myFunction21();toggleText21(this.id); ">-</button><div id = "myDIV21"><br>
+  if (n &lt; 0 || n &gt;= _tokens.size())<br>
+    throw(std::invalid_argument("index out of range"));<br>
+  return _tokens[n];<br>
+}</div><br>
+//----&lt; writeable indexing of SemiExpression &gt;-----------------------<br>
+<br>
+Token& SemiExp::operator[](size_t n)<br>
+{<button id ="978"onclick="myFunction22();toggleText22(this.id); ">-</button><div id = "myDIV22"><br>
+  if (n &lt; 0 || n &gt;= _tokens.size())<br>
+    throw(std::invalid_argument("index out of range"));<br>
+  return _tokens[n];<br>
+}</div><br>
+//----&lt; return number of tokens in semiExpression &gt;------------------<br>
+<br>
+size_t SemiExp::length() const<br>
+{<button id ="977"onclick="myFunction23();toggleText23(this.id); ">-</button><div id = "myDIV23"><br>
+  return _tokens.size();<br>
+}</div><br>
+//----&lt; display collection tokens on console &gt;-----------------------<br>
+<br>
+std::string SemiExp::show(bool showNewLines) const<br>
+{<button id ="976"onclick="myFunction24();toggleText24(this.id); ">-</button><div id = "myDIV24"><br>
+  std::ostringstream out;<br>
+  if(showNewLines)<br>
+    out &lt;&lt; "\n  ";<br>
+  for (auto token : _tokens)<br>
+    if(token != "\n" || showNewLines == true)<br>
+      out &lt;&lt; token &lt;&lt; " ";<br>
+  if(showNewLines)<br>
+    out &lt;&lt; "\n";<br>
+  return out.str();<br>
+}</div><br>
+<br>
+#ifdef TEST_SEMIEXP<br>
+<br>
+int main()<br>
+{<button id ="975"onclick="myFunction25();toggleText25(this.id); ">-</button><div id = "myDIV25"><br>
+  std::cout &lt;&lt; "\n  Testing SemiExp class";<br>
+  std::cout &lt;&lt; "\n =======================\n";<br>
+<br>
+  Toker toker;<br>
+  //std::string fileSpec = "../Tokenizer/Tokenizer.cpp";<br>
+  std::string fileSpec = "SemiExp.cpp";<br>
+<br>
+  std::fstream in(fileSpec);<br>
+  if (!in.good())<br>
+  {<br>
+    std::cout &lt;&lt; "\n  can't open file " &lt;&lt; fileSpec &lt;&lt; "\n\n";<br>
+    return 1;<br>
+  }<br>
+  else<br>
+  {<br>
+    std::cout &lt;&lt; "\n  processing file \"" &lt;&lt; fileSpec &lt;&lt; "\"\n";<br>
+  }<br>
+  toker.attach(&in);<br>
+<br>
+  SemiExp semi(&toker);<br>
+  while(semi.get())<br>
+  {<br>
+    std::cout &lt;&lt; "\n  -- semiExpression -- at line number " &lt;&lt; semi.currentLineCount();<br>
+    std::cout &lt;&lt; semi.show();<br>
+  }<br>
+  /*<br>
+     May have collected tokens, but reached end of stream<br>
+     before finding SemiExp terminator.<br>
+   */<br>
+  if (semi.length() &gt; 0)<br>
+  {<br>
+    std::cout &lt;&lt; "\n  -- semiExpression --";<br>
+    std::cout &lt;&lt; semi.show(true);<br>
+  }<br>
+  std::cout &lt;&lt; "\n\n";<br>
+  return 0;<br>
+}</div><br>
+#endif<br>
+<//pre><//body><//html>

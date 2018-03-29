@@ -1,0 +1,146 @@
+<html><head><link rel="stylesheet" type = "text/css"  href="Publisher.css"/><script type="text/javascript" src = "jssPublisher.js"></script></head><body><pre><br><br><br><a href = "ActionsAndRules.h.htm">ActionsAndRules.h - </a><br><a href = "ConfigureParser.h.htm">ConfigureParser.h - </a><br><a href = "Parser.h.htm">Parser.h - </a><br><br><br>/////////////////////////////////////////////////////////////////////<br>
+//  Parser.cpp - Analyzes C++ language constructs                  //<br>
+//  ver 1.5                                                        //<br>
+//  Language:      Visual C++ 2008, SP1                            //<br>
+//  Platform:      Dell XPS 8900, Windows 10                       //<br>
+//  Application:   Prototype for CSE687 Pr1, Sp09, ...             //<br>
+//  Author:        Jim Fawcett, CST 4-187, Syracuse University     //<br>
+//                 (315) 443-3948, jfawcett@twcny.rr.com           //<br>
+/////////////////////////////////////////////////////////////////////<br>
+<br>
+#include &lt;iostream&gt;<br>
+#include &lt;string&gt;<br>
+#include "../Utilities/Utilities.h"<br>
+#include "../Tokenizer/Tokenizer.h"<br>
+#include "../SemiExp/SemiExp.h"<br>
+#include "Parser.h"<br>
+#include "ActionsAndRules.h"<br>
+#include "ConfigureParser.h"<br>
+<br>
+using namespace CodeAnalysis;<br>
+using namespace Scanner;<br>
+using namespace Utilities;<br>
+using Demo = Logging::StaticLogger&lt;1&gt;;<br>
+<br>
+//----&lt; register parsing rule &gt;--------------------------------<br>
+<br>
+void Parser::addRule(IRule* pRule)<br>
+{<button id ="999"onclick="myFunction1();toggleText1(this.id); ">-</button><div id = "myDIV1"><br>
+  rules.push_back(pRule);<br>
+}</div><br>
+//----&lt; get next ITokCollection &gt;------------------------------<br>
+<br>
+bool Parser::next() <br>
+{ <br>
+  bool succeeded = pTokColl-&gt;get();<br>
+<br>
+  if (!succeeded)<br>
+  {<br>
+    return false;<br>
+  }<br>
+  std::string debug = pTokColl-&gt;show();<br>
+  //GrammarHelper::showParseDemo("get SemiExp: ", *pTokColl);<br>
+<br>
+  pTokColl-&gt;trim();<br>
+<br>
+  return true;<br>
+}</div><br>
+<br>
+//----&lt; parse the SemiExp by applying all rules to it &gt;--------<br>
+<br>
+bool Parser::parse()<br>
+{<button id ="998"onclick="myFunction2();toggleText2(this.id); ">-</button><div id = "myDIV2"><br>
+  for (size_t i = 0; i&lt;rules.size(); ++i)<br>
+  {<br>
+    std::string debug = pTokColl-&gt;show();<br>
+<br>
+    bool doWhat = rules[i]-&gt;doTest(pTokColl);<br>
+    if (doWhat == IRule::Stop)<br>
+      break;<br>
+  }<br>
+  return true;<br>
+}</div><br>
+//----&lt; register action with a rule &gt;--------------------------<br>
+<br>
+void IRule::addAction(IAction *pAction)<br>
+{<button id ="997"onclick="myFunction3();toggleText3(this.id); ">-</button><div id = "myDIV3"><br>
+  actions.push_back(pAction);<br>
+}</div><br>
+//----&lt; invoke all actions associated with a rule &gt;------------<br>
+<br>
+void IRule::doActions(const ITokCollection* pTokColl)<br>
+{<button id ="996"onclick="myFunction4();toggleText4(this.id); ">-</button><div id = "myDIV4"><br>
+  if(actions.size() &gt; 0)<br>
+    for(size_t i=0; i&lt;actions.size(); ++i)<br>
+      actions[i]-&gt;doAction(pTokColl);<br>
+}</div><br>
+<br>
+//----&lt; test stub &gt;--------------------------------------------<br>
+<br>
+#include "../FileSystem/FileSystem.h"<br>
+<br>
+#ifdef TEST_PARSER<br>
+<br>
+#include &lt;queue&gt;<br>
+#include &lt;string&gt;<br>
+#define Util StringHelper<br>
+<br>
+int main(int argc, char* argv[])<br>
+{<button id ="995"onclick="myFunction5();toggleText5(this.id); ">-</button><div id = "myDIV5"><br>
+  Util::Title("Testing Parser Class");<br>
+  putline();<br>
+<br>
+  // collecting tokens from files, named on the command line<br>
+<br>
+  if(argc &lt; 2)<br>
+  {<br>
+    std::cout <br>
+      &lt;&lt; "\n  please enter name of file to process on command line\n\n";<br>
+    return 1;<br>
+  }<br>
+<br>
+  for(int i=1; i&lt;argc; ++i)<br>
+  {<br>
+    std::string fileSpec = FileSystem::Path::getFullFileSpec(argv[i]);<br>
+    std::string msg = "Processing file" + fileSpec;<br>
+    Util::title(msg);<br>
+    putline();<br>
+<br>
+    ConfigParseForCodeAnal configure;<br>
+    Parser* pParser = configure.Build();<br>
+    try<br>
+    {<br>
+      if(pParser)<br>
+      {<br>
+        if(!configure.Attach(argv[i]))<br>
+        {<br>
+          std::cout &lt;&lt; "\n  could not open file " &lt;&lt; fileSpec &lt;&lt; std::endl;<br>
+          continue;<br>
+        }<br>
+      }<br>
+      else<br>
+      {<br>
+        std::cout &lt;&lt; "\n\n  Parser not built\n\n";<br>
+        return 1;<br>
+      }<br>
+      // now that parser is built, use it<br>
+<br>
+      while(pParser-&gt;next())<br>
+        pParser-&gt;parse();<br>
+      std::cout &lt;&lt; "\n";<br>
+<br>
+      // show AST<br>
+      Repository* pRepo = Repository::getInstance();<br>
+      ASTNode* pGlobalScope = pRepo-&gt;getGlobalScope();<br>
+      TreeWalk(pGlobalScope);<br>
+    }<br>
+    catch(std::exception& ex)<br>
+    {<br>
+      std::cout &lt;&lt; "\n\n    " &lt;&lt; ex.what() &lt;&lt; "\n\n";<br>
+    }<br>
+  }<br>
+  std::cout &lt;&lt; "\n";<br>
+}</div><br>
+<br>
+#endif<br>
+<//pre><//body><//html>
